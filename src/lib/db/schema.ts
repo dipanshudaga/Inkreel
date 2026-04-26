@@ -8,18 +8,30 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  name: text("name"),
+  image: text("image"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const media = pgTable("media", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   type: text("type").notNull(), // 'movie', 'tv', 'anime', 'book', 'manga'
+  category: text("category"), // compatible with older version
   
   // External API linkage
   externalId: text("external_id").notNull(), // TMDB ID, AniList ID, or OpenLibrary ID
   
   // Cached Metadata (to show in grids without re-fetching)
   title: text("title").notNull(),
+  slug: text("slug"),
   posterUrl: text("poster_url"),
   backdropUrl: text("backdrop_url"),
   releaseYear: integer("release_year"),
+  year: integer("year"), // compatible with older version
   creator: text("creator"), // Director or Author
   description: text("description"),
   runtime: integer("runtime"), // duration in minutes or pages
