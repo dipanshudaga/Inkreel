@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { media, diaryEntries, trackingEntries } from "@/lib/db/schema";
+import { media, logs } from "@/lib/db/schema";
 import { auth } from "@/auth";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -42,54 +42,47 @@ export async function logMediaAction(formData: {
       targetMediaId = existing.id;
     } else {
       const [newMedia] = await db.insert(media).values({
-        ...formData.mediaData,
+        title: formData.mediaData.title,
+        type: formData.mediaData.subType,
+        category: formData.mediaData.category,
+        posterUrl: formData.mediaData.posterUrl,
+        releaseYear: formData.mediaData.year,
+        year: formData.mediaData.year,
+        creator: formData.mediaData.creator,
+        slug: formData.mediaData.slug,
+        externalId: `manual_${Date.now()}`,
+        status: "completed",
+        rating: formData.logData.rating,
+        reviewText: formData.logData.reviewText,
+        completedAt: formData.logData.loggedDate,
       }).returning();
       targetMediaId = newMedia.id;
     }
-  }
-
-  // 2. Create the Diary Entry
-  await db.insert(diaryEntries).values({
-    userId: session.user.id,
-    mediaId: targetMediaId!,
-    loggedDate: formData.logData.loggedDate,
-    rating: formData.logData.rating.toString(),
-    reviewText: formData.logData.reviewText,
-    isLiked: formData.logData.isLiked,
-  });
-
-  // 3. Update Tracking Status (e.g. mark as completed or update progress)
-  const existingTracking = await db.query.trackingEntries.findFirst({
-    where: and(
-      eq(trackingEntries.userId, session.user.id),
-      eq(trackingEntries.mediaId, targetMediaId!)
-    ),
-  });
-
-  if (existingTracking) {
-    await db.update(trackingEntries)
+  } else {
+    // Update existing media status
+    await db.update(media)
       .set({
         status: "completed",
-        rating: formData.logData.rating.toString(),
-        isLiked: formData.logData.isLiked,
-        progress: formData.logData.progress || existingTracking.progress,
+        rating: formData.logData.rating,
+        reviewText: formData.logData.reviewText,
+        completedAt: formData.logData.loggedDate,
         updatedAt: new Date(),
       })
-      .where(eq(trackingEntries.id, existingTracking.id));
-  } else {
-    await db.insert(trackingEntries).values({
-      userId: session.user.id,
-      mediaId: targetMediaId!,
-      status: "completed",
-      rating: formData.logData.rating.toString(),
-      isLiked: formData.logData.isLiked,
-      progress: formData.logData.progress,
-    });
+      .where(eq(media.id, targetMediaId));
   }
+
+  // 2. Create the Log entry
+  await db.insert(logs).values({
+    mediaId: targetMediaId!,
+    date: formData.logData.loggedDate,
+    action: "finished",
+    progress: formData.logData.progress || null,
+    notes: formData.logData.reviewText,
+  });
 
   revalidatePath("/");
   revalidatePath(`/${formData.mediaData.category}`);
-  revalidatePath(`/${formData.mediaData.category}/${formData.mediaData.slug}`);
+  revalidatePath(`/items/${targetMediaId}`);
   
   return { success: true };
 }

@@ -5,14 +5,10 @@ import { db } from "@/lib/db";
 export default async function PlayPage() {
   const trendingGames = await getTrendingGames();
   
-  // Fetch user tracking data for this category
-  const userEntries = await db.query.trackingEntries.findMany({
-    with: {
-      media: true,
-    },
+  // Fetch user media for this category
+  const playUserItems = await db.query.media.findMany({
+    where: eq(media.type, "game"),
   });
-
-  const playUserEntries = userEntries.filter(entry => entry.media?.category === "play");
 
   return (
     <div className="flex flex-col">
@@ -35,7 +31,7 @@ export default async function PlayPage() {
 
       <FilteredMediaView 
         initialItems={trendingGames}
-        userItems={playUserEntries}
+        userItems={playUserItems}
         category="play"
       />
     </div>
