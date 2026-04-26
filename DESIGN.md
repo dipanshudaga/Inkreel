@@ -1,69 +1,87 @@
-# Letterboxd • Social film discovery.
+# The Uncluttered Chronicle: Design Language Specification
 
-## Mission
-Create implementation-ready, token-driven UI guidance for Letterboxd • Social film discovery. that is optimized for consistency, accessibility, and fast delivery across e-commerce storefront.
+## 1. Visual Manifesto
+"The Uncluttered Chronicle" is a high-editorial digital archive built on the principles of **Swiss Grid Design** and **Print-Inspired Minimalism**. It rejects the noisy, algorithm-driven interfaces of modern social trackers in favor of a tranquil, focus-oriented environment. Depth is created through typographic scale and stark compartmentalization rather than shadows or gradients.
 
-## Brand
-- Product/brand: Letterboxd • Social film discovery.
-- URL: https://letterboxd.com/
-- Audience: online shoppers and consumers
-- Product surface: e-commerce storefront
+---
 
-## Style Foundations
-- Visual style: clean, functional, implementation-oriented
-- Typography scale: `font.size.xs=11px`, `font.size.sm=12px`, `font.size.md=13px`, `font.size.lg=15px`, `font.size.xl=16px`, `font.size.2xl=17.6px`, `font.size.3xl=18px`, `font.size.4xl=22px`
-- Color palette: `color.text.primary=#667788`, `color.text.secondary=#99aabb`, `color.text.tertiary=#ffffff`, `color.text.inverse=#aabbcc`, `color.surface.base=#000000`, `color.surface.muted=#00ac1c`, `color.surface.raised=#2c3440`
-- Spacing scale: `space.1=2px`, `space.2=3px`, `space.3=4px`, `space.4=5px`, `space.5=5.2px`, `space.6=6px`, `space.7=6.5px`, `space.8=7px`
-- Radius/shadow/motion tokens: `radius.xs=2px`, `radius.sm=3px`, `radius.md=4px` | `shadow.1=rgba(221, 238, 255, 0.25) 0px 0px 0px 1px inset`, `shadow.2=rgba(255, 255, 255, 0.3) 0px 1px 0px 0px inset` | `motion.duration.instant=100ms`, `motion.duration.fast=200ms`, `motion.duration.normal=300ms`, `motion.duration.slow=500ms`
+## 2. Color Palette
+The palette is strictly monochromatic with a singular, high-intensity accent. It is designed to mimic the high-contrast experience of high-end newsprint.
 
-## Accessibility
-- Target: WCAG 2.2 AA
-- Keyboard-first interactions required.
-- Focus-visible rules required.
-- Contrast constraints required.
+| Token | Hex | Usage |
+| :--- | :--- | :--- |
+| **Primary** | `#1A1A1A` | Logos, primary borders, headers, and critical button backgrounds. |
+| **Background** | `#F7F5F0` | Warm newsprint off-white. The base for all screens to reduce eye strain. |
+| **Surface** | `#EBE8DE` | Hover states, active search results, and secondary structural blocks. |
+| **Text** | `#1A1A1A` | High-contrast black for maximum legibility in body and headings. |
+| **Muted** | `#737373` | Metadata, timestamps, placeholders, and inactive icons. |
+| **Accent** | `#DE3C26` | "Archive Vermilion." Primary CTAs, active indicators, and unread marks. |
 
-## Writing Tone
-Concise, confident, implementation-focused.
+---
 
-## Rules: Do
-- Use semantic tokens, not raw hex values, in component guidance.
-- Every component must define states for default, hover, focus-visible, active, disabled, loading, and error.
-- Component behavior should specify responsive and edge-case handling.
-- Interactive components must document keyboard, pointer, and touch behavior.
-- Accessibility acceptance criteria must be testable in implementation.
+## 3. Typography
+The typographic system relies on a sharp contrast between an elegant, high-contrast serif and a technical, structured sans-serif.
 
-## Rules: Don't
-- Do not allow low-contrast text or hidden focus indicators.
-- Do not introduce one-off spacing or typography exceptions.
-- Do not use ambiguous labels or non-descriptive actions.
-- Do not ship component guidance without explicit state rules.
+### **Headings (Editorial)**
+- **Family:** `Newsreader` (Serif)
+- **Weights:** 400 (Italic), 500 (Medium)
+- **Usage:** Titles, hero statements, and emphasized quotes.
+- **Style:** Tight tracking (-0.02em) and generous scale.
 
-## Guideline Authoring Workflow
-1. Restate design intent in one sentence.
-2. Define foundations and semantic tokens.
-3. Define component anatomy, variants, interactions, and state behavior.
-4. Add accessibility acceptance criteria with pass/fail checks.
-5. Add anti-patterns, migration notes, and edge-case handling.
-6. End with a QA checklist.
+### **Body Copy**
+- **Family:** `Newsreader` (Serif)
+- **Weight:** 400
+- **Size:** 18px
+- **Line Height:** 1.6 (Generous leading for long-form reviews)
 
-## Required Output Structure
-- Context and goals.
-- Design tokens and foundations.
-- Component-level rules (anatomy, variants, states, responsive behavior).
-- Accessibility requirements and testable acceptance criteria.
-- Content and tone standards with examples.
-- Anti-patterns and prohibited implementations.
-- QA checklist.
+### **UI & Metadata**
+- **Family:** `Space Grotesk` (Sans-Serif)
+- **Weight:** 400, 500 (Bold)
+- **Size:** 12px - 14px
+- **Usage:** Buttons, navigation, timestamps, category badges, and technical labels.
+- **Style:** Uppercase with wide tracking (0.05em) for small UI labels.
 
-## Component Rule Expectations
-- Include keyboard, pointer, and touch behavior.
-- Include spacing and typography token requirements.
-- Include long-content, overflow, and empty-state handling.
-- Include known page component density: links (290), buttons (37), inputs (28), cards (13), navigation (10), lists (10), tables (2).
+---
 
+## 4. UI Components & Tokens
 
-## Quality Gates
-- Every non-negotiable rule must use "must".
-- Every recommendation should use "should".
-- Every accessibility rule must be testable in implementation.
-- Teams should prefer system consistency over local visual exceptions.
+### **Borders & Grids**
+- **Utility:** `border-hairline`
+- **Rule:** `1px solid #1A1A1A`
+- **Logic:** All sections are divided by literal lines. No drop shadows are permitted. The grid is the primary structural element.
+
+### **Border Radius**
+- **Utility:** `radius-none`
+- **Rule:** `0px`
+- **Logic:** Sharp corners on every element—buttons, images, and containers—to maintain the print-document aesthetic.
+
+### **Buttons**
+- **Primary:** Background `#DE3C26`, Text `#FFFFFF`, font `Space Grotesk` 500 UPPERCASE.
+- **Secondary:** Background transparent, border `1px solid #1A1A1A`, text `#1A1A1A`.
+- **Interaction:** Hover transitions are immediate or subtle (0.2s), shifting to inverse colors.
+
+### **Images**
+- **Treatment:** Rendered in `grayscale(100%)` by default to preserve the monochromatic archive feel. 
+- **Interaction:** Shift to full color only on hover or active selection.
+
+---
+
+## 5. Layout Architecture
+
+### **Asymmetric 3-Column Grid (Dashboard)**
+- **Column 1 (20%):** Navigation and global context.
+- **Column 2 (50%):** The "Unified Timeline"—the primary scrolling content.
+- **Column 3 (30%):** The "Shelf"—secondary stats and currently active media.
+
+### **Split-Screen (Media Detail)**
+- **Left (40%):** Sticky viewport for large-scale media art.
+- **Right (60%):** Scrollable container for metadata, synopsis, and reviews.
+
+### **Masonry (Personal Archive)**
+- **Logic:** Edge-to-edge chronological grid. Year dividers intersect the hairline borders.
+
+---
+
+## 6. Interaction Model
+- **Primary Action:** `Cmd + K` for global search, emphasizing keyboard-first navigation.
+- **Logging:** Distraction-free full-screen modal with invisible borders on text areas to mimic writing on a blank page.
