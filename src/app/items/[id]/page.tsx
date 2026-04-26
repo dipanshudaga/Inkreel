@@ -17,8 +17,9 @@ interface ItemPageProps {
 import { LogButton } from "@/components/item/log-button";
 
 export default async function ItemPage({ params }: ItemPageProps) {
+  const { id } = await params;
   const item = await db.query.media.findFirst({
-    where: eq(media.id, params.id),
+    where: eq(media.id, id),
     with: {
       logs: {
         orderBy: [desc(logs.date)],
