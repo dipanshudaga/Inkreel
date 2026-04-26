@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { media, logs } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { format } from "date-fns";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Star, ArrowLeft, Plus } from "lucide-react";
 import { notFound } from "next/navigation";

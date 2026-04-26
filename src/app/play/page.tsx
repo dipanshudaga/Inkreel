@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { media } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export default async function PlayPage() {
   const trendingGames = await getTrendingGames();
   
