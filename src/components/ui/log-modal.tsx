@@ -36,6 +36,7 @@ export function LogModal() {
         },
         logData: {
           rating,
+          isLiked: liked,
           reviewText: review,
           progress: progress ? parseInt(progress) : undefined,
           loggedDate: new Date().toISOString().split("T")[0],

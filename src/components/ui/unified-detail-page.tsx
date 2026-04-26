@@ -81,7 +81,7 @@ export default async function UnifiedDetailPage({ params, searchParams, category
                Log Entry
             </button>
             <div className="flex items-center gap-2 ml-4">
-               <StarRating rating={media.rating} size={18} className={accentClass} />
+               <StarRating value={media.rating} size="md" className={accentClass} />
                <span className="text-[15px] font-bold text-vault-dark ml-2">{media.rating.toFixed(1)}</span>
             </div>
           </div>

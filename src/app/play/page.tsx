@@ -1,6 +1,8 @@
 import { getTrendingGames } from "@/lib/api/bgg";
 import { FilteredMediaView } from "@/components/ui/filtered-media-view";
 import { db } from "@/lib/db";
+import { media } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export default async function PlayPage() {
   const trendingGames = await getTrendingGames();

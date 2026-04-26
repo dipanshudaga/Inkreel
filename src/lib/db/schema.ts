@@ -35,6 +35,7 @@ export const media = pgTable("media", {
   creator: text("creator"), // Director or Author
   description: text("description"),
   runtime: integer("runtime"), // duration in minutes or pages
+  genres: text("genres"), // comma separated
 
   // Tracking state for this user
   status: text("status").notNull().default('plan_to_watch'), 

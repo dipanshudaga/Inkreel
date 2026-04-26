@@ -109,24 +109,24 @@ export async function getMediaBySlug(slugOrId: string, category?: string): Promi
     const results = await searchTMDB(query);
     if (results.length === 0) return null;
     // Try to find the exact slug match first, then title match, then first result
-    return results.find(r => r.slug === slugOrId) || 
-           results.find(r => r.title.toLowerCase() === query.toLowerCase()) || 
+    return (results as MediaItem[]).find(r => r.slug === slugOrId) || 
+           (results as MediaItem[]).find(r => r.title.toLowerCase() === query.toLowerCase()) || 
            results[0];
   }
 
   if (category === "read") {
     const results = await searchGoogleBooks(query);
     if (results.length === 0) return null;
-    return results.find(r => r.slug === slugOrId) || results[0];
+    return (results as MediaItem[]).find(r => r.slug === slugOrId) || results[0];
   }
 
   if (category === "play") {
     const results = await searchBGG(query);
     if (results.length === 0) return null;
-    return results.find(r => r.slug === slugOrId) || results[0];
+    return (results as MediaItem[]).find(r => r.slug === slugOrId) || results[0];
   }
 
   const results = await searchMedia(query);
   if (results.length === 0) return null;
-  return results.find(r => r.slug === slugOrId) || results[0];
+  return (results as MediaItem[]).find(r => r.slug === slugOrId) || results[0];
 }
