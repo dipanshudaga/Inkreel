@@ -1,6 +1,7 @@
 import { Newsreader, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/navbar";
+import { Sidebar } from "@/components/layout/sidebar";
+import { SearchModal } from "@/components/layout/search-modal";
 
 const newsreader = Newsreader({
   subsets: ["latin"],
@@ -20,6 +21,8 @@ export const metadata = {
   description: "A local-first personal media database.",
 };
 
+import { QuickLogModal } from "@/components/layout/quick-log-modal";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,11 +33,13 @@ export default function RootLayout({
       lang="en"
       className={`${newsreader.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans selection:bg-traced-dark selection:text-traced-bg">
-        {/* <Navbar /> We will replace this with Sidebar later */}
-        <main className="flex-1 relative z-10 w-full mb-24">
+      <body className="min-h-full flex font-sans selection:bg-traced-dark selection:text-traced-bg">
+        <Sidebar />
+        <main className="flex-1 relative z-10 w-full ml-[288px]">
           {children}
         </main>
+        <SearchModal />
+        <QuickLogModal />
       </body>
     </html>
   );
