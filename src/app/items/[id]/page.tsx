@@ -107,7 +107,9 @@ export default async function ItemPage({ params }: ItemPageProps) {
                 Avg Rating
               </div>
             </div>
-          </di          {/* Details Sections */}
+          </div>
+          
+          {/* Details Sections */}
           <div className="flex flex-col grow">
              {/* Synopsis */}
              <div className="py-12 px-16 border-b-hairline flex flex-col gap-6">
