@@ -19,7 +19,7 @@ import { AddToArchiveButton } from "@/components/item/add-to-archive-button";
 
 import { getMovieById, getTVById } from "@/lib/api/tmdb";
 import { getBookById } from "@/lib/api/google-books";
-import { getAnimeById, getMangaById } from "@/lib/api/anilist";
+import { getAniListById } from "@/lib/api/anilist";
 
 export default async function ItemPage({ params }: ItemPageProps) {
   const { id } = await params;
@@ -45,14 +45,11 @@ export default async function ItemPage({ params }: ItemPageProps) {
     } else if (id.startsWith("tmdb-tv-")) {
       item = await getTVById(id.replace("tmdb-tv-", ""));
       isExternal = true;
-    } else if (id.startsWith("google-")) {
-      item = await getBookById(id.replace("google-", ""));
+    } else if (id.startsWith("gb-")) {
+      item = await getBookById(id.replace("gb-", ""));
       isExternal = true;
-    } else if (id.startsWith("ani-anime-")) {
-      item = await getAnimeById(id.replace("ani-anime-", ""));
-      isExternal = true;
-    } else if (id.startsWith("ani-manga-")) {
-      item = await getMangaById(id.replace("ani-manga-", ""));
+    } else if (id.startsWith("anilist-")) {
+      item = await getAniListById(parseInt(id.replace("anilist-", ""), 10));
       isExternal = true;
     }
   }
