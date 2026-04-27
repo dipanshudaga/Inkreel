@@ -6,6 +6,7 @@ import { StarRating } from "./star-rating";
 import { logMediaAction } from "@/lib/actions/log";
 import { useRouter } from "next/navigation";
 import { useLogModal } from "@/hooks/use-log-modal";
+import { cn } from "@/lib/utils";
 
 export function LogModal() {
   const { isOpen, onClose, media: initialMedia } = useLogModal();
