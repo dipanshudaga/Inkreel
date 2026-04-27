@@ -1,10 +1,12 @@
-import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
-
-config({ path: ".env.local" });
-
 import postgres from "postgres";
 import * as schema from "./schema";
+import dns from "dns";
+
+// Force IPv4 resolution to prevent ENOTFOUND errors on Vercel/Supavisor
+if (typeof dns.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first");
+}
 
 const connectionString = process.env.DATABASE_URL;
 
