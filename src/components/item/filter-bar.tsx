@@ -88,7 +88,9 @@ export function FilterBar({
   decades,
   currentFilters,
   categoryOptions,
-  typeOptions
+  typeOptions,
+  categoryLabel,
+  typeLabel
 }: { 
   genres: string[], 
   decades: string[],
