@@ -41,7 +41,7 @@ export default async function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12">
-            {trendingWatch.map((item) => (
+            {trendingWatch.map((item: any) => (
               <Link 
                 key={item.id} 
                 href={`/items/${item.id}`}
@@ -94,7 +94,7 @@ export default async function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12">
-            {trendingRead.map((item) => (
+            {trendingRead.map((item: any) => (
               <Link 
                 key={item.id} 
                 href={`/items/${item.id}`}
