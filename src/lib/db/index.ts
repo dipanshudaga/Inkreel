@@ -9,7 +9,11 @@ import * as schema from "./schema";
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error("❌ DATABASE_URL is missing! Ensure it is set in Vercel Environment Variables.");
+  console.error("❌ DATABASE_URL is missing in this environment!");
+} else {
+  // Log a masked version for debugging in Vercel
+  const masked = connectionString.replace(/:([^:@]+)@/, ":****@");
+  console.log("🔗 Database connection initialized:", masked.split('@')[1]);
 }
 
 // Disable prefetch as it is not supported for "Transaction" mode in Supabase
