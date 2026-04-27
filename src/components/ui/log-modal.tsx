@@ -37,7 +37,6 @@ export function LogModal() {
           description: initialMedia.description,
           genres: initialMedia.genres,
           runtime: initialMedia.runtime || (initialMedia as any).duration,
-          pageCount: initialMedia.pageCount,
           externalId: initialMedia.externalId,
         },
         logData: {
