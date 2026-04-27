@@ -32,7 +32,7 @@ export async function importLetterboxdAction(data: any[]) {
 
       // 2. Try to find on TMDB for metadata (Optional but better)
       const searchResults = await searchTMDB(title);
-      const match = searchResults.find(r => 
+      const match = searchResults.find((r: any) => 
         r.title.toLowerCase() === title.toLowerCase() && 
         (!year || r.year === year)
       ) || searchResults[0];
@@ -94,7 +94,7 @@ export async function importGoodreadsAction(data: any[]) {
 
       // Try Google Books
       const searchResults = await searchGoogleBooks(title);
-      const match = searchResults.find(r => 
+      const match = searchResults.find((r: any) => 
         r.title.toLowerCase() === title.toLowerCase() && 
         (!author || r.creator.toLowerCase().includes(author.toLowerCase()))
       ) || searchResults[0];
