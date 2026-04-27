@@ -27,17 +27,22 @@ export default async function ItemPage({ params }: ItemPageProps) {
   let item: any = null;
   let isExternal = false;
 
-  // 1. Try fetching from local DB first
-  item = await db.query.media.findFirst({
-    where: eq(media.id, id),
-    with: {
-      logs: {
-        orderBy: [desc(logs.date)],
-      },
-    },
-  });
+  // UUID regex — only query DB if it looks like a real UUID
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-  // 2. If not found and looks like an external ID, fetch from API
+  // 1. Only query DB for UUID-shaped IDs to avoid Postgres crashing on prefixed external IDs
+  if (isUUID) {
+    item = await db.query.media.findFirst({
+      where: eq(media.id, id),
+      with: {
+        logs: {
+          orderBy: [desc(logs.date)],
+        },
+      },
+    });
+  }
+
+  // 2. If not in DB (or not a UUID), check if it's a prefixed external ID
   if (!item) {
     if (id.startsWith("tmdb-movie-")) {
       item = await getMovieById(id.replace("tmdb-movie-", ""));
