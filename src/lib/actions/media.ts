@@ -53,7 +53,7 @@ export async function saveMediaAction(externalId: string, status: string, rating
       mediaId: newMedia.id,
       date: new Date().toISOString(),
       action: status === "watched" ? "finished" : "added",
-      note: status === "watched" ? "Manually added to archive." : "Added to watchlist.",
+      notes: status === "watched" ? "Manually added to archive." : "Added to watchlist.",
     });
 
     revalidatePath("/");

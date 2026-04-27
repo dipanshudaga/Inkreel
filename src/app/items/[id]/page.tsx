@@ -216,7 +216,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
                       <div key={log.id} className="grid grid-cols-[1fr_auto] py-6 gap-8 items-start">
                         <div className="flex flex-col gap-2">
                           <span className="text-lg font-serif italic text-traced-dark">
-                            {log.note || (log.action === 'watched' ? "Witnessed the vision." : log.action === 'read' ? "Absorbed the ink." : "Logged in the archive.")}
+                            {log.notes || (log.action === 'watched' ? "Witnessed the vision." : log.action === 'read' ? "Absorbed the ink." : "Logged in the archive.")}
                           </span>
                           <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">
                             {format(new Date(log.date), "MMMM d, yyyy")}
