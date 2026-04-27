@@ -8,7 +8,16 @@ interface LogModalStore {
     id: string;
     title: string;
     category: Category;
+    subType: string;
     posterUrl: string;
+    backdropUrl?: string;
+    year?: number;
+    creator?: string;
+    description?: string;
+    genres?: string[];
+    runtime?: number;
+    pageCount?: number;
+    externalId?: string;
   } | null;
   onOpen: (media?: LogModalStore['media']) => void;
   onClose: () => void;

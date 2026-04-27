@@ -22,6 +22,7 @@ export const metadata = {
 };
 
 import { QuickLogModal } from "@/components/layout/quick-log-modal";
+import { LogModal } from "@/components/ui/log-modal";
 
 export default function RootLayout({
   children,
@@ -40,6 +41,7 @@ export default function RootLayout({
         </main>
         <SearchModal />
         <QuickLogModal />
+        <LogModal />
       </body>
     </html>
   );

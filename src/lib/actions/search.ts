@@ -3,6 +3,7 @@
 import { searchTMDB, getTrendingWatch } from "@/lib/api/tmdb";
 import { searchGoogleBooks, getTrendingBooks } from "@/lib/api/google-books";
 import { searchBGG, getTrendingGames } from "@/lib/api/bgg";
+import { searchAniList } from "@/lib/api/anilist";
 
 export async function searchMediaAction(query: string) {
   try {
@@ -11,6 +12,8 @@ export async function searchMediaAction(query: string) {
       searchTMDB(query),
       searchGoogleBooks(query),
       searchBGG(query),
+      searchAniList(query, "ANIME"),
+      searchAniList(query, "MANGA"),
     ]);
 
     const flattenedResults = results

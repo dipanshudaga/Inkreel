@@ -75,6 +75,11 @@ export async function getMediaBySlug(slugOrId: string, category?: string): Promi
     const id = slugOrId.replace("gb-", "");
     return (await getBookById(id)) as MediaItem;
   }
+  if (slugOrId.startsWith("anilist-")) {
+    const id = parseInt(slugOrId.replace("anilist-", ""));
+    const { getAniListById } = await import("./anilist");
+    return (await getAniListById(id)) as unknown as MediaItem;
+  }
   if (slugOrId.startsWith("bgg-")) {
     const id = slugOrId.replace("bgg-", "");
     const details = await getBGGDetails([id]);

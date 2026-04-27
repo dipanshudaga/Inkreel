@@ -44,11 +44,11 @@ export function StarRating({
         )}
       >
         {isFull ? (
-          <Star className={cn(sizeClasses[size], "fill-brand-green text-brand-green")} />
+          <Star className={cn(sizeClasses[size], "fill-traced-accent text-traced-accent")} />
         ) : isHalf ? (
-          <StarHalf className={cn(sizeClasses[size], "fill-brand-green text-brand-green")} />
+          <StarHalf className={cn(sizeClasses[size], "fill-traced-accent text-traced-accent")} />
         ) : (
-          <Star className={cn(sizeClasses[size], "text-surface-overlay fill-surface-overlay")} />
+          <Star className={cn(sizeClasses[size], "text-traced-surface fill-traced-surface")} />
         )}
       </button>
     );

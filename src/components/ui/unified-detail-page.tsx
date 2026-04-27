@@ -1,12 +1,12 @@
 import { getMediaBySlug } from "@/lib/api/mock";
 import { notFound } from "next/navigation";
 import { StarRating } from "@/components/ui/star-rating";
-import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DetailLogButton } from "./detail-log-button";
 
-export default async function UnifiedDetailPage({ params, searchParams, category }: { 
+export default async function UnifiedDetailPage({ params, category }: { 
   params: Promise<{ slug: string }>,
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>,
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>,
   category?: string
 }) {
   const { slug } = await params;
@@ -16,98 +16,112 @@ export default async function UnifiedDetailPage({ params, searchParams, category
     notFound();
   }
 
-  // Determine category-specific classes
-  const accentClass = 
-    media.category === "watch" ? "text-vault-watch" : 
-    media.category === "read" ? "text-vault-read" : 
-    "text-vault-play";
-    
-  const accentBgClass = 
-    media.category === "watch" ? "bg-vault-watch" : 
-    media.category === "read" ? "bg-vault-read" : 
-    "bg-vault-play";
-
   return (
-    <div className="relative flex flex-col min-h-screen pt-24 pb-32 vault-container">
-      <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-16 xl:gap-24 items-start">
-        
-        {/* Left Column: Poster Image */}
-        <div className="flex flex-col gap-6">
-          <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[20px] bg-[#EDE6D8] border border-vault-dark/5">
-            <img src={media.posterUrl} alt={media.title} className="w-full h-full object-cover" />
+    <div className="grow flex flex-col min-h-screen bg-traced-bg">
+      {/* Backdrop Section (if available) */}
+      {media.backdropUrl && (
+        <div className="w-full h-80 relative overflow-hidden border-b-hairline bg-traced-surface">
+          <div 
+            className="absolute inset-0 bg-cover bg-center grayscale opacity-30"
+            style={{ backgroundImage: `url(${media.backdropUrl})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-traced-bg to-transparent" />
+        </div>
+      )}
+
+      <div className="max-w-[1200px] mx-auto w-full px-12 py-16 flex flex-col lg:flex-row gap-20">
+        {/* Left Column: Poster */}
+        <div className="w-full lg:w-80 shrink-0">
+          <div className="aspect-[2/3] w-full bg-traced-surface border-hairline overflow-hidden shadow-2xl relative">
+            {media.posterUrl ? (
+              <img src={media.posterUrl} alt={media.title} className="w-full h-full object-cover grayscale-25" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-traced-gray text-[10px] uppercase tracking-widest">
+                No Cover
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-12 flex flex-col gap-8">
+            <DetailLogButton media={media} />
+            
+            <div className="flex flex-col gap-2">
+              <span className="uppercase tracking-[0.15em] text-[#737373] font-sans text-[11px] font-bold">
+                Archive Rating
+              </span>
+              <div className="flex items-center gap-3">
+                <StarRating value={media.rating} size="md" />
+                <span className="text-traced-dark font-serif font-medium text-xl">
+                  {media.rating ? media.rating.toFixed(1) : "N/A"}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Details */}
-        <div className="flex flex-col gap-8 pt-4">
-          
-          {/* Metadata & Title */}
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-               <span className={cn("text-[14px] font-extrabold tracking-[1px] uppercase", accentClass)}>
-                 {media.category}
-               </span>
-               <div className="w-1 h-1 rounded-full bg-vault-dark/20" />
-               <span className="text-[14px] font-semibold text-vault-gray">{media.year}</span>
-               {media.duration && (
-                 <>
-                   <div className="w-1 h-1 rounded-full bg-vault-dark/20" />
-                   <span className="text-[14px] font-semibold text-vault-gray">{media.duration} mins</span>
-                 </>
-               )}
-               {media.pageCount && (
-                 <>
-                   <div className="w-1 h-1 rounded-full bg-vault-dark/20" />
-                   <span className="text-[14px] font-semibold text-vault-gray">{media.pageCount} pages</span>
-                 </>
-               )}
+        {/* Right Column: Content */}
+        <div className="flex flex-col gap-10 flex-1">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-4">
+              <span className="uppercase tracking-[0.2em] text-traced-accent font-sans text-[11px] font-black">
+                {media.subType || media.category}
+              </span>
+              <div className="h-px w-8 bg-[#D4D4D4]" />
+              <span className="uppercase tracking-[0.2em] text-[#737373] font-sans text-[11px]">
+                {media.year}
+              </span>
+              {media.runtime && (
+                <>
+                  <div className="h-px w-4 bg-[#D4D4D4]" />
+                  <span className="uppercase tracking-[0.2em] text-[#737373] font-sans text-[11px]">
+                    {media.runtime} {media.category === 'read' ? 'pages' : 'mins'}
+                  </span>
+                </>
+              )}
             </div>
             
-            <h1 className="text-[56px] font-extrabold tracking-[-1.5px] text-vault-dark leading-[1.05]">
+            <h1 className="text-[64px] leading-[1.05] tracking-[-0.03em] text-traced-dark font-serif font-medium italic m-0">
               {media.title}
             </h1>
             
-            <p className="text-[18px] font-medium text-vault-gray leading-[1.4]">
-              {media.category === "watch" ? "A film by" : 
-               media.category === "read" ? "Written by" : 
-               "Designed by"} <span className="text-vault-dark font-extrabold">{media.creator}</span>
-            </p>
-          </div>
-
-          {/* Action Row */}
-          <div className="flex items-center gap-4 py-4 border-y border-vault-dark/5">
-            <button className="btn-primary flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-               Log Entry
-            </button>
-            <div className="flex items-center gap-2 ml-4">
-               <StarRating value={media.rating} size="md" className={accentClass} />
-               <span className="text-[15px] font-bold text-vault-dark ml-2">{media.rating.toFixed(1)}</span>
+            <div className="flex items-center gap-4">
+               <span className="text-xl text-[#737373] font-serif italic">Directed by</span>
+               <span className="text-2xl text-traced-dark font-serif font-medium underline decoration-traced-accent/30 underline-offset-8">
+                 {media.creator}
+               </span>
             </div>
           </div>
 
-          {/* Description */}
-          <div className="flex flex-col gap-4 mt-2">
-             <h3 className="text-[14px] font-bold uppercase tracking-[1px] text-vault-gray">Synopsis</h3>
-             <p className="text-[18px] leading-[1.6] text-vault-dark tracking-[-0.01em] max-w-3xl font-medium">
-               {media.description}
-             </p>
+          <div className="h-px w-full bg-[#1A1A1A15]" />
+
+          <div className="flex flex-col gap-6">
+            <h3 className="uppercase tracking-[0.2em] text-[#737373] font-sans text-[11px] font-bold">
+              Synopsis
+            </h3>
+            <p className="text-xl leading-relaxed text-traced-dark font-serif max-w-2xl">
+              {media.description || "No synopsis available."}
+            </p>
           </div>
 
-          {/* Details / Genres */}
-          <div className="flex flex-col gap-4 mt-8">
-            <h3 className="text-[14px] font-bold uppercase tracking-[1px] text-vault-gray">Genres</h3>
-            <div className="flex flex-wrap gap-2">
-              {media.genres.map(g => (
-                <div key={g} className="px-4 py-2 rounded-full bg-black/[0.03] text-[14px] font-bold text-vault-dark">
-                  {g}
-                </div>
+          <div className="flex flex-col gap-6">
+            <h3 className="uppercase tracking-[0.2em] text-[#737373] font-sans text-[11px] font-bold">
+              Genres
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {media.genres.map((genre) => (
+                <span 
+                  key={genre} 
+                  className="px-4 py-1.5 border-hairline text-traced-dark font-sans text-[12px] uppercase tracking-wider bg-white"
+                >
+                  {genre}
+                </span>
               ))}
             </div>
           </div>
         </div>
-
       </div>
     </div>
+  );
+}
   );
 }

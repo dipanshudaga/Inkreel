@@ -13,9 +13,14 @@ export async function logMediaAction(formData: {
     category: "watch" | "read" | "play";
     subType: string;
     posterUrl: string;
+    backdropUrl?: string;
     year: number;
     creator: string;
     slug: string;
+    description?: string;
+    genres?: string[];
+    runtime?: number;
+    externalId?: string;
   };
   logData: {
     rating: number;
@@ -46,11 +51,15 @@ export async function logMediaAction(formData: {
         type: formData.mediaData.subType,
         category: formData.mediaData.category,
         posterUrl: formData.mediaData.posterUrl,
+        backdropUrl: formData.mediaData.backdropUrl,
         releaseYear: formData.mediaData.year,
         year: formData.mediaData.year,
         creator: formData.mediaData.creator,
         slug: formData.mediaData.slug,
-        externalId: `manual_${Date.now()}`,
+        description: formData.mediaData.description,
+        genres: formData.mediaData.genres?.join(", "),
+        runtime: formData.mediaData.runtime,
+        externalId: formData.mediaData.externalId || `manual_${Date.now()}`,
         status: "completed",
         rating: formData.logData.rating,
         reviewText: formData.logData.reviewText,

@@ -108,7 +108,7 @@ export async function searchGoogleBooks(query: string, startIndex: number = 0) {
         description: info.description || "",
         genres: info.categories || [],
         rating: info.averageRating || 0,
-        pageCount: info.pageCount || 0,
+        runtime: info.pageCount || 0,
       };
     });
   } catch (error) {
@@ -149,7 +149,7 @@ export async function getBookById(id: string) {
       description: info.description || "",
       genres: info.categories || [],
       rating: info.averageRating || 0,
-      pageCount: info.pageCount || 0,
+      runtime: info.pageCount || 0,
     };
   } catch (error) {
     console.error("Google Books Detail Error:", error);
