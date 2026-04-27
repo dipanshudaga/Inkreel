@@ -32,7 +32,11 @@ export default async function WatchDiary() {
   });
 
   const totalLogged = watchItems.filter(i => i.status === 'completed').length;
-  const thisYear = watchItems.filter(i => i.status === 'completed' && (i.completedAt?.startsWith('2026') || false)).length;
+  const thisYear = watchItems.filter(i => {
+    if (i.status !== 'completed') return false;
+    const dateStr = String(i.completedAt || "");
+    return dateStr.startsWith('2026');
+  }).length;
 
   return (
     <div className="flex min-h-screen">
@@ -95,7 +99,13 @@ export default async function WatchDiary() {
                     {item.rating ? "★".repeat(Math.floor(item.rating)) + (item.rating % 1 !== 0 ? "½" : "") : ""}
                   </div>
                   <div className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px]">
-                    {item.completedAt ? format(new Date(item.completedAt), "MMM d") : ""}
+                    {(() => {
+                      try {
+                        return item.completedAt ? format(new Date(item.completedAt), "MMM d") : "";
+                      } catch (e) {
+                        return "Unknown";
+                      }
+                    })()}
                   </div>
                 </div>
               </div>
