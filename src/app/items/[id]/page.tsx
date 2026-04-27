@@ -8,6 +8,7 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import { ActionBar } from "@/components/item/action-bar";
 import { notFound } from "next/navigation";
+import { BackButton } from "@/components/ui/back-button";
 
 interface ItemPageProps {
   params: {
@@ -76,7 +77,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
                 <img 
                   src={item.posterUrl} 
                   alt={item.title} 
-                  className="size-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                  className="size-full object-cover transition-all duration-700"
                 />
              ) : (
                 <div className="size-full flex items-center justify-center text-traced-gray uppercase tracking-widest text-xs">
@@ -92,7 +93,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
         <div className="flex-1 flex flex-col overflow-y-auto">
           {/* Header Section — relative so X can be absolute */}
           <div className="relative py-12 px-16 border-b-hairline">
-            <div className="flex flex-col gap-6 max-w-xl pr-16">
+            <div className="flex flex-col gap-4 max-w-xl pr-16">
               <h1 className="tracking-[-0.02em] text-traced-dark font-serif font-medium text-4xl leading-tight">
                 {item.title}
               </h1>
@@ -110,12 +111,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
             </div>
 
             {/* Close / Back button — absolute top-right */}
-            <Link
-              href="javascript:history.back()"
-              className="absolute top-8 right-8 size-9 flex items-center justify-center border-hairline bg-white hover:bg-traced-dark hover:text-white transition-colors cursor-pointer"
-            >
-              <X size={16} strokeWidth={2} />
-            </Link>
+            <BackButton />
           </div>
           
           {/* Details Sections */}

@@ -93,7 +93,7 @@ export function SearchModal() {
         <div className="flex flex-col py-4 max-h-[60vh] overflow-y-auto">
           {query.length > 0 && results.length === 0 && !isLoading && (
             <div className="px-8 py-4 text-traced-gray font-sans text-sm uppercase tracking-wider">
-              No results found. Press Enter to search global database.
+              No results found.
             </div>
           )}
 
@@ -123,7 +123,7 @@ export function SearchModal() {
                         <div className="w-10 h-15 shrink-0 overflow-hidden bg-[#CCCCCC] border border-[#1A1A1A]">
                           {item.posterUrl && (
                             <div 
-                              className="bg-cover bg-center grayscale size-full" 
+                              className="bg-cover bg-center size-full" 
                               style={{ backgroundImage: `url(${item.posterUrl})` }} 
                             />
                           )}
@@ -133,15 +133,8 @@ export function SearchModal() {
                             {item.title}
                           </div>
                           <div className="uppercase tracking-[0.05em] mt-1 text-[#737373] font-sans text-xs">
-                            {item.year} • {
-                              item.status 
-                                ? (item.completedAt ? `Logged ${format(new Date(item.completedAt), "MMM d, yyyy")}` : 'In Archive')
-                                : 'Global Database'
-                            }
+                            {item.year}{item.status ? ` • ${item.completedAt ? `Logged ${format(new Date(item.completedAt), "MMM d, yyyy")}` : 'In Archive'}` : ''}
                           </div>
-                        </div>
-                        <div className="text-traced-dark font-sans font-medium text-sm">
-                          {item.rating ? (typeof item.rating === 'number' ? "★".repeat(Math.floor(item.rating)) + (item.rating % 1 !== 0 ? "½" : "") : item.rating) : ""}
                         </div>
                       </div>
                     ))}
