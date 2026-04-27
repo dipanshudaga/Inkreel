@@ -100,7 +100,7 @@ export function SearchOverlay({
             return (
               <Link
                 key={item.id}
-                href={`/${item.category}/${item.slug}`}
+                href={item.slug ? `/${item.category}/${item.slug}` : `/items/${item.id}`}
                 onClick={onClose}
                 className="flex items-center gap-6 p-4 hover:bg-white border border-transparent hover:border-hairline transition-all cursor-pointer group"
               >

@@ -84,22 +84,22 @@ export function Sidebar() {
               Cmd+K
             </kbd>
           </button>
-          <button 
-            onClick={() => alert("CSV Import coming soon!")}
+          <Link 
+            href="/import"
             className="items-center flex justify-between py-4 px-6 border-t-hairline hover:bg-black/5 transition-colors w-full cursor-pointer text-left"
           >
             <span className="tracking-[0.05em] uppercase text-traced-dark font-sans font-medium text-[13px]">
               Import
             </span>
-          </button>
-          <button 
-            onClick={() => alert("Settings coming soon!")}
+          </Link>
+          <Link 
+            href="/settings"
             className="items-center flex justify-between py-4 px-6 border-t-hairline hover:bg-black/5 transition-colors w-full cursor-pointer text-left"
           >
             <span className="tracking-[0.05em] uppercase text-traced-dark font-sans font-medium text-[13px]">
               Settings
             </span>
-          </button>
+          </Link>
         </div>
       </div>
     </aside>

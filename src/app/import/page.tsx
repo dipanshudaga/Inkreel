@@ -1,133 +1,135 @@
 "use client";
 
 import { useState } from "react";
-import { importCsvAction } from "@/lib/actions/import";
+import Papa from "papaparse";
+import { importLetterboxdAction, importGoodreadsAction } from "@/lib/actions/import";
+import { Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function ImportPage() {
-  const [isUploading, setIsUploading] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; count?: number; error?: string } | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [result, setResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: "letterboxd" | "goodreads") => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const text = event.target?.result as string;
-      setIsUploading(true);
-      const res = await importCsvAction(text);
-      setResult(res);
-      setIsUploading(false);
-    };
-    reader.readAsText(file);
+    setIsImporting(true);
+    setResult(null);
+    setError(null);
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        try {
+          let response;
+          if (type === "letterboxd") {
+            response = await importLetterboxdAction(results.data);
+          } else {
+            response = await importGoodreadsAction(results.data);
+          }
+
+          if (response.success) {
+            setResult({ imported: response.importedCount, skipped: response.skippedCount });
+          } else {
+            setError("Import failed. Please check the file format.");
+          }
+        } catch (err) {
+          setError("An error occurred during import.");
+          console.error(err);
+        } finally {
+          setIsImporting(false);
+        }
+      },
+      error: (err) => {
+        setError(`Failed to parse CSV: ${err.message}`);
+        setIsImporting(false);
+      }
+    });
   };
 
   return (
-    <div className="flex flex-col w-full bg-[#FBF8F0] antialiased min-h-[calc(100vh-80px)]">
-      <div className="flex flex-col items-center pt-20 px-6">
-        <div className="max-w-[600px] w-full flex flex-col gap-8">
-          
-          <div className="flex flex-col gap-2">
-            <div className="[letter-spacing:-2px] text-center text-[#2C2E2C] font-extrabold text-[46px] leading-[1] m-0">
-              Import Data
-            </div>
-            <div className="text-center text-[#8A8A7A] font-medium text-base m-0">
-              Bring your history from Letterboxd, Goodreads, and BGG.
-            </div>
+    <div className="grow flex flex-col py-16 px-20 bg-traced-bg">
+      <div className="mb-16">
+        <h1 className="text-[48px] leading-tight tracking-[-0.02em] text-traced-dark font-serif font-medium italic m-0">
+          Import Data.
+        </h1>
+        <div className="mt-6 flex items-center gap-4">
+          <div className="h-px w-12 bg-traced-accent" />
+          <p className="tracking-[0.1em] uppercase text-[#737373] font-sans text-[11px] font-bold">
+            Migrate your media from other platforms.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl">
+        {/* Letterboxd Card */}
+        <ImportCard 
+          title="Letterboxd"
+          description="Upload your diary.csv to import your watched movies."
+          onUpload={(e) => handleFileUpload(e, "letterboxd")}
+          isImporting={isImporting}
+        />
+
+        {/* Goodreads Card */}
+        <ImportCard 
+          title="Goodreads"
+          description="Upload your library_export.csv to import your books."
+          onUpload={(e) => handleFileUpload(e, "goodreads")}
+          isImporting={isImporting}
+        />
+      </div>
+
+      {result && (
+        <div className="mt-12 p-6 border-hairline bg-white/50 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <CheckCircle2 className="text-green-600 h-6 w-6" />
+          <div>
+            <p className="font-serif italic text-lg text-traced-dark">Import Complete</p>
+            <p className="text-[13px] font-sans text-[#737373] uppercase tracking-widest mt-1">
+              {result.imported} items added · {result.skipped} skipped (already exists)
+            </p>
           </div>
+        </div>
+      )}
 
-          <div className="flex flex-col gap-4">
-            
-            {/* Letterboxd Row */}
-            <div className="flex items-center justify-between rounded-2xl bg-white border-[1.5px] border-solid border-[#2C2E2C1F] p-6 relative">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center opacity-[0.15] rounded-xl bg-[#E8643B] shrink-0 w-12 h-12" />
-                <div className="flex flex-col gap-1">
-                  <div className="inline-block text-[#2C2E2C] font-bold text-base">
-                    Letterboxd
-                  </div>
-                  <div className="inline-block text-[#8A8A7A] font-medium text-[13px]">
-                    Import watched movies & ratings (.csv)
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-[10px] py-2.5 px-5 bg-[#2C2E2C0F] cursor-pointer hover:bg-black/10 transition-colors relative overflow-hidden">
-                <div className="text-[#2C2E2C] font-semibold text-sm pointer-events-none">
-                  {isUploading ? "Uploading..." : "Upload CSV"}
-                </div>
-                <input 
-                  type="file" 
-                  accept=".csv" 
-                  onChange={handleFileUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  disabled={isUploading}
-                />
-              </div>
-            </div>
+      {error && (
+        <div className="mt-12 p-6 border-hairline bg-red-50 border-red-200 flex items-center gap-4">
+          <AlertCircle className="text-red-600 h-6 w-6" />
+          <p className="font-serif italic text-lg text-red-900">{error}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
-            {/* Goodreads Row */}
-            <div className="flex items-center justify-between rounded-2xl bg-white border-[1.5px] border-solid border-[#2C2E2C1F] p-6 relative">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center opacity-[0.15] rounded-xl bg-[#D4A843] shrink-0 w-12 h-12" />
-                <div className="flex flex-col gap-1">
-                  <div className="inline-block text-[#2C2E2C] font-bold text-base">
-                    Goodreads
-                  </div>
-                  <div className="inline-block text-[#8A8A7A] font-medium text-[13px]">
-                    Import read books & ratings (.csv)
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-[10px] py-2.5 px-5 bg-[#2C2E2C0F] cursor-pointer hover:bg-black/10 transition-colors relative overflow-hidden">
-                <div className="text-[#2C2E2C] font-semibold text-sm pointer-events-none">
-                  {isUploading ? "Uploading..." : "Upload CSV"}
-                </div>
-                <input 
-                  type="file" 
-                  accept=".csv" 
-                  onChange={handleFileUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  disabled={isUploading}
-                />
-              </div>
-            </div>
+function ImportCard({ title, description, onUpload, isImporting }: { title: string; description: string; onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void; isImporting: boolean }) {
+  return (
+    <div className="flex flex-col border-hairline bg-white p-10 gap-8 group hover:shadow-xl transition-all duration-700">
+      <div className="flex flex-col gap-2">
+        <h3 className="text-3xl font-serif font-medium italic text-traced-dark group-hover:text-traced-accent transition-colors">{title}</h3>
+        <p className="text-[#737373] text-[14px] leading-relaxed">{description}</p>
+      </div>
 
-            {/* BGG Row */}
-            <div className="flex items-center justify-between rounded-2xl bg-white border-[1.5px] border-solid border-[#2C2E2C1F] p-6 relative">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center opacity-[0.15] rounded-xl bg-[#5B8CA8] shrink-0 w-12 h-12" />
-                <div className="flex flex-col gap-1">
-                  <div className="inline-block text-[#2C2E2C] font-bold text-base">
-                    BoardGameGeek
-                  </div>
-                  <div className="inline-block text-[#8A8A7A] font-medium text-[13px]">
-                    Import logged games & ratings (.csv)
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-[10px] py-2.5 px-5 bg-[#2C2E2C0F] cursor-pointer hover:bg-black/10 transition-colors relative overflow-hidden">
-                <div className="text-[#2C2E2C] font-semibold text-sm pointer-events-none">
-                  {isUploading ? "Uploading..." : "Upload CSV"}
-                </div>
-                <input 
-                  type="file" 
-                  accept=".csv" 
-                  onChange={handleFileUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  disabled={isUploading}
-                />
-              </div>
-            </div>
-
-          </div>
-          
-          {/* Status Display */}
-          {result && (
-            <div className={`p-4 rounded-xl text-center text-[14px] font-medium ${result.success ? 'bg-[#D4A843]/10 text-[#D4A843]' : 'bg-[#E8643B]/10 text-[#E8643B]'}`}>
-              {result.success ? `Successfully imported ${result.count} entries.` : result.error}
-            </div>
+      <div className="relative">
+        <input 
+          type="file" 
+          accept=".csv"
+          className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+          onChange={onUpload}
+          disabled={isImporting}
+        />
+        <div className={cn(
+          "flex items-center justify-center gap-3 py-4 px-6 border border-[#1A1A1A] font-sans font-bold text-[11px] uppercase tracking-[0.2em] transition-all",
+          isImporting ? "bg-traced-surface text-[#A3A3A3]" : "group-hover:bg-traced-dark group-hover:text-white"
+        )}>
+          {isImporting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Upload className="h-4 w-4" />
           )}
-
+          {isImporting ? "Processing..." : "Select CSV File"}
         </div>
       </div>
     </div>

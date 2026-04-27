@@ -9,15 +9,36 @@ const getHeaders = () => ({
 
 async function safeTMDBFetch(url: string) {
   try {
-    const res = await fetch(url, { 
+    // Determine the URL with fallback for API Key
+    let finalUrl = url;
+    const hasQuery = url.includes("?");
+    
+    // If no Bearer token, we MUST use api_key in URL
+    if (!TMDB_ACCESS_TOKEN && TMDB_API_KEY) {
+      finalUrl += `${hasQuery ? "&" : "?"}api_key=${TMDB_API_KEY}`;
+    }
+
+    const res = await fetch(finalUrl, { 
       headers: getHeaders(),
-      next: { revalidate: 3600 } // Cache for 1 hour to reduce hits
+      next: { revalidate: 3600 } 
     });
-    if (!res.ok) return { results: [] };
+    
+    // If Bearer token failed (401) and we have an API Key, try falling back to API Key in URL
+    if (res.status === 401 && TMDB_ACCESS_TOKEN && TMDB_API_KEY) {
+      console.warn(`TMDB Bearer Token failed (401). Falling back to API Key...`);
+      const fallbackUrl = url + `${hasQuery ? "&" : "?"}api_key=${TMDB_API_KEY}`;
+      const retryRes = await fetch(fallbackUrl, { next: { revalidate: 3600 } });
+      if (retryRes.ok) return await retryRes.json();
+    }
+    
+    if (!res.ok) {
+      console.error(`TMDB API Error: ${res.status} ${res.statusText} for URL: ${finalUrl}`);
+      return { results: [] };
+    }
+    
     return await res.json();
   } catch (error: any) {
-    // Downgraded to warn to prevent Next.js Error Overlay in dev mode
-    console.warn(`TMDB SafeFetch Fallback active for ${url}:`, error?.message || error);
+    console.error(`TMDB Fetch Exception for ${url}:`, error?.message || error);
     return { results: [] };
   }
 }
