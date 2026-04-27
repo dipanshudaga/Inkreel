@@ -30,11 +30,6 @@ export function Sidebar() {
       <div className="flex flex-col grow">
         {/* Diaries Section */}
         <div className="flex flex-col border-b-hairline">
-          <div className="py-4 px-6 border-b-hairline">
-            <h2 className="tracking-[0.05em] uppercase text-[#737373] font-sans font-semibold text-[13px]">
-              Diaries
-            </h2>
-          </div>
           <Link href="/watch" className="items-center flex justify-between py-4 px-6 hover:bg-black/5 transition-colors cursor-pointer text-left">
             <span className="tracking-[0.05em] uppercase text-traced-dark font-sans font-medium text-sm text-left">
               Watch
@@ -55,11 +50,6 @@ export function Sidebar() {
 
         {/* Actions Section */}
         <div className="flex flex-col border-b-hairline">
-          <div className="py-4 px-6 border-b-hairline">
-            <h2 className="tracking-[0.05em] uppercase text-[#737373] font-sans font-semibold text-[13px]">
-              Actions
-            </h2>
-          </div>
           <button 
             onClick={() => useQuickLogStore.getState().openQuickLog()}
             className="items-center flex py-4 px-6 gap-3 hover:bg-traced-surface transition-colors w-full cursor-pointer group"
