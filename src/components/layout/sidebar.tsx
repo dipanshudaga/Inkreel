@@ -25,7 +25,7 @@ export function Sidebar() {
       {/* Branding */}
       <div className="flex flex-col py-8 px-6 gap-12 border-b-hairline">
         <Link href="/" className="tracking-[-0.02em] text-traced-dark font-serif font-medium italic text-4xl">
-          Traced.
+          Inkreel.
         </Link>
       </div>
 

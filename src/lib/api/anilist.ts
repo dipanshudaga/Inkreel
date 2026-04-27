@@ -51,6 +51,20 @@ export async function searchAniList(query: string, type: "ANIME" | "MANGA") {
           duration
           chapters
           volumes
+          studios(isMain: true) {
+            nodes {
+              name
+            }
+          }
+          staff(perPage: 1) {
+            edges {
+              node {
+                name {
+                  full
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -71,7 +85,7 @@ export async function searchAniList(query: string, type: "ANIME" | "MANGA") {
     posterUrl: m.coverImage.large,
     backdropUrl: m.bannerImage,
     year: m.startDate.year,
-    creator: "Various", 
+    creator: m.staff?.edges?.[0]?.node?.name?.full || m.studios?.nodes?.[0]?.name || "Unknown", 
     description: m.description?.replace(/<[^>]*>?/gm, ""), 
     genres: m.genres,
     runtime: m.type === "ANIME" ? m.duration : m.chapters || m.volumes,

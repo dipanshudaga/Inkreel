@@ -135,10 +135,18 @@ export function SearchModal() {
                       </span>
                     </div>
                     {typeResults.map((item, idx) => {
-                      let sublabel = item.year || "";
-                      if (item.type === 'anime' && item.format) {
-                        sublabel = `${item.format.replace('_', ' ')} • ${item.year || "N/A"}`;
+                      let sublabel = "";
+                      const hasCreator = item.creator && !item.creator.toLowerCase().includes("unknown") && item.creator !== "Movie" && item.creator !== "TV Series";
+                      
+                      if (hasCreator) {
+                        sublabel += `${item.creator} • `;
                       }
+
+                      if (item.type === 'anime' && item.format) {
+                        sublabel += `${item.format.replace('_', ' ')} • `;
+                      }
+                      
+                      sublabel += item.year || "N/A";
                       
                       return (
                         <div 

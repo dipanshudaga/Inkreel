@@ -18,7 +18,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata = {
-  title: "Traced.",
+  title: "Inkreel.",
   description: "A local-first personal media database.",
 };
 

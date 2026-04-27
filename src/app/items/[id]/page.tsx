@@ -99,153 +99,139 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
   return (
     <div className="flex flex-col min-h-screen bg-traced-bg text-traced-dark selection:bg-traced-accent selection:text-white">
-      {/* 1. Header Navigation */}
-      <nav className="flex items-center justify-between px-16 py-8">
-        <Link 
-          href="/" 
-          className="group flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-traced-gray hover:text-traced-dark transition-colors"
-        >
-          <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Archive
-        </Link>
+      {/* 1. Sticky Top Action Bar */}
+      <nav className="sticky top-0 z-50 h-14 border-b border-black bg-traced-bg flex items-center justify-between px-10">
         <div className="flex items-center gap-6">
-           <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-traced-gray">
-             {item.type === 'anime' ? 'ANIME' : item.type === 'tv' ? 'TV SHOW' : item.type === 'manga' ? 'MANGA' : item.type.toUpperCase()}
-           </span>
+          <Link 
+            href={item.category === 'read' ? '/read' : '/watch'} 
+            className="text-[10px] uppercase tracking-[0.2em] font-bold text-traced-gray hover:text-traced-dark transition-colors"
+          >
+            Index / {item.category === 'read' ? 'Read' : 'Watch'} / {item.title}
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-8">
+          <ActionBar
+            initialStatus={item.status}
+            initialRating={item.rating}
+            mediaId={item.id}
+            isExternal={isExternal}
+            variant="compact"
+            item={item}
+          />
         </div>
       </nav>
 
-      {/* 2. Main Layout Container */}
-      <main className="flex-1 px-16 pb-32">
-        <div className="max-w-6xl mx-auto">
-          
-          {/* 3. Mandatory Action Bar at the Top */}
-          <div className="mb-12 py-8 border-y border-[#1A1A1A] bg-white/30">
-            <div className="max-w-xl">
-              <ActionBar
-                initialStatus={item.status}
-                initialRating={item.rating}
-                mediaId={item.id}
-                isExternal={isExternal}
-              />
-            </div>
-          </div>
-
-          {/* 4. Title Section */}
-          <header className="mb-20">
-            <h1 className="text-7xl md:text-8xl font-serif font-medium tracking-tight leading-[1.0] max-w-5xl mb-12">
+      <div className="flex flex-1">
+        {/* 2. Main Content (Left Panel) */}
+        <main className="flex-1 border-r border-hairline overflow-y-auto">
+          {/* Hero Section */}
+          <header className="p-10 lg:p-16 border-b border-hairline">
+            <h1 className="text-5xl lg:text-7xl font-serif font-medium italic tracking-[-0.04em] leading-[0.85] m-0 mb-16">
               {item.title}
             </h1>
             
-            <div className="flex flex-wrap items-end gap-12 border-t border-[#1A1A1A] pt-8">
+            <div className="flex flex-wrap gap-16 mt-12">
               {displayCreator && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Director/Author</span>
-                  <span className="text-lg font-medium tracking-tight leading-none">{item.creator}</span>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#A3A3A3]">Director/Author</span>
+                  <span className="text-2xl font-serif italic">{item.creator}</span>
                 </div>
               )}
-              
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Release</span>
-                <span className="text-lg font-medium tracking-tight leading-none italic text-[#737373]">{item.releaseYear || item.year || "N/A"}</span>
-              </div>
-
-              <div className="flex flex-col gap-2 min-w-[200px]">
-                <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Genres</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {genresArray.filter((g: string) => g).map((genre: string) => (
-                    <span key={genre} className="text-[10px] font-bold border border-[#1A1A1A] px-2 py-0.5 uppercase tracking-tight bg-white">
-                      {genre}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#A3A3A3]">Release Year</span>
+                <span className="text-2xl font-serif italic">{item.releaseYear || item.year || "N/A"}</span>
               </div>
             </div>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-20">
-            {/* 5. Left Column: Poster */}
-            <aside>
-              <div className="sticky top-12">
-                <div className="w-full aspect-[2/3] border border-[#1A1A1A] shadow-[0_30px_60px_-12px_rgba(0,0,0,0.15)] bg-traced-surface relative group overflow-hidden">
-                  {item.posterUrl ? (
-                    <img 
-                      src={item.posterUrl} 
-                      alt={item.title} 
-                      className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="size-full flex items-center justify-center text-traced-gray uppercase tracking-widest text-[10px]">No Poster</div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none" />
-                </div>
+          {/* Synopsis Section */}
+          <section className="p-10 lg:p-16 border-b border-hairline">
+            <span className="block text-[10px] uppercase tracking-[0.3em] font-bold text-[#A3A3A3] mb-8">Synopsis</span>
+            <p className="text-2xl lg:text-3xl font-serif leading-[1.4] max-w-3xl">
+              {item.description || "In the vast expanse of the archive, this particular narrative remains partially veiled."}
+            </p>
+          </section>
+
+          {/* Diary Records */}
+          <section className="p-10 lg:p-16">
+            <span className="block text-[10px] uppercase tracking-[0.3em] font-bold text-[#A3A3A3] mb-8">Diary Records</span>
+            {item.logs && item.logs.length > 0 ? (
+              <div className="flex flex-col">
+                {item.logs.map((log: any) => (
+                  <div key={log.id} className="flex justify-between items-center py-6 border-b border-[#F0F0F0] last:border-0">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xl font-serif italic">{format(new Date(log.date), "MMM d, yyyy")}</span>
+                      <span className="text-[10px] uppercase tracking-[0.1em] text-[#737373]">{log.notes || "Logged as completed"}</span>
+                    </div>
+                    {log.rating && (
+                      <span className="text-sm font-sans font-bold tracking-widest">{log.rating.toFixed(1)} / 10</span>
+                    )}
+                  </div>
+                ))}
               </div>
-            </aside>
+            ) : (
+              <p className="text-sm font-serif italic text-[#737373]">No entries recorded in the diary yet.</p>
+            )}
+          </section>
+        </main>
 
-            {/* 6. Right Column: Content */}
-            <article className="flex flex-col gap-24">
-              {/* Synopsis Section */}
-              <section className="flex flex-col gap-8">
-                <div className="flex items-center gap-4">
-                  <div className="h-px bg-[#1A1A1A] w-8" />
-                  <h2 className="text-[10px] uppercase tracking-[0.3em] font-black text-traced-gray">Synopsis</h2>
-                </div>
-                <div className="max-w-2xl">
-                  <p className="text-lg md:text-xl font-sans leading-relaxed text-traced-dark/80 text-justify">
-                    {item.description || "In the vast expanse of the archive, this particular narrative remains partially veiled."}
-                  </p>
-                </div>
-              </section>
-
-              {/* Logs Section */}
-              {item.logs && item.logs.length > 0 && (
-                <section className="flex flex-col gap-8">
-                  <div className="flex items-center gap-4">
-                    <div className="h-px bg-[#1A1A1A] w-8" />
-                    <h2 className="text-[10px] uppercase tracking-[0.3em] font-black text-traced-gray">Log History</h2>
-                  </div>
-                  <div className="flex flex-col divide-y divide-[#E5E5E5] border-t border-b border-[#E5E5E5]">
-                    {item.logs.map((log: any) => (
-                      <div key={log.id} className="grid grid-cols-[1fr_auto] py-5 gap-8 items-start">
-                        <div className="flex flex-col gap-1.5">
-                          <span className="text-base font-serif italic text-traced-dark">
-                            {log.notes || "Logged in the archive."}
-                          </span>
-                          <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-traced-gray">
-                            {format(new Date(log.date), "MMMM d, yyyy")}
-                          </span>
-                        </div>
-                        {log.rating && (
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black text-white text-[9px] font-bold uppercase tracking-widest">
-                            <Star size={9} fill="white" />
-                            {log.rating.toFixed(1)}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </section>
+        {/* 3. Meta Panel (Right Panel) */}
+        <aside className="w-[440px] hidden lg:flex flex-col bg-traced-bg">
+          {/* Poster */}
+          <div className="p-10 border-b border-hairline flex justify-center">
+            <div className="w-full aspect-[2/3] border border-black bg-traced-surface relative group overflow-hidden">
+              {item.posterUrl ? (
+                <img 
+                  src={item.posterUrl} 
+                  alt={item.title} 
+                  className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : (
+                <div className="size-full flex items-center justify-center text-traced-gray uppercase tracking-widest text-[10px]">No Poster</div>
               )}
-
-              {/* Technical Footnote */}
-              <section className="flex flex-wrap gap-x-12 gap-y-6 pt-12 border-t border-[#1A1A1A] opacity-40">
-                <div className="flex flex-col gap-1">
-                   <span className="text-[8px] uppercase tracking-widest font-bold">Entry ID</span>
-                   <span className="text-[9px] font-mono break-all">{item.id}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                   <span className="text-[8px] uppercase tracking-widest font-bold">Source</span>
-                   <span className="text-[9px] font-mono uppercase">{item.externalId?.split('-')[0] || 'Local'}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                   <span className="text-[8px] uppercase tracking-widest font-bold">Category</span>
-                   <span className="text-[9px] font-mono uppercase">{item.category}</span>
-                </div>
-              </section>
-            </article>
+            </div>
           </div>
-        </div>
-      </main>
+
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-2 border-b border-hairline">
+            <div className="p-8 border-r border-hairline flex flex-col gap-2">
+              <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#A3A3A3]">Runtime</span>
+              <span className="text-sm font-sans font-bold tracking-tight">{item.runtime ? `${item.runtime} MIN` : "N/A"}</span>
+            </div>
+            <div className="p-8 flex flex-col gap-2">
+              <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#A3A3A3]">Language</span>
+              <span className="text-sm font-sans font-bold tracking-tight uppercase">{item.language || "English"}</span>
+            </div>
+          </div>
+
+          {/* Genres */}
+          <div className="p-10 border-b border-hairline">
+            <span className="block text-[9px] uppercase tracking-[0.2em] font-bold text-[#A3A3A3] mb-5">Genres</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {genresArray.filter((g: string) => g).map((genre: string) => (
+                <span key={genre} className="text-lg font-serif italic">
+                  {genre}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Progress */}
+          {(item.type === 'tv' || item.type === 'manga' || item.type === 'book') && (
+            <div className="p-10">
+              <span className="block text-[9px] uppercase tracking-[0.2em] font-bold text-[#A3A3A3] mb-6">Progress</span>
+              <div className="w-full h-0.5 bg-hairline relative mb-4">
+                <div className="absolute left-0 top-0 h-full bg-black transition-all duration-1000" style={{ width: '100%' }} />
+              </div>
+              <div className="flex justify-between items-baseline">
+                <span className="text-2xl font-sans font-bold tracking-tight">Completed</span>
+                <span className="text-sm font-serif italic text-[#737373]">1/1</span>
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
     </div>
   );
 }

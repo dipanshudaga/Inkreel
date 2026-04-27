@@ -85,10 +85,6 @@ function TrendingSection({ title, href, items }: { title: string, href: string, 
                 {item.title}
               </div>
               <div className="flex items-center gap-3">
-                <span className="uppercase tracking-[0.1em] text-[#737373] font-sans text-[11px] font-bold">
-                  {item.type}
-                </span>
-                <span className="text-[#D4D4D4]">•</span>
                 <span className="uppercase tracking-[0.1em] text-[#A3A3A3] font-sans text-[11px]">
                   {item.year || item.releaseYear || ""}
                 </span>

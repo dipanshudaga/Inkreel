@@ -31,11 +31,11 @@ export default async function SettingsPage() {
       <div className="flex flex-col gap-12 max-w-2xl">
         <section className="flex flex-col gap-6">
           <h2 className="tracking-[0.05em] uppercase text-[#737373] font-sans font-semibold text-[13px] border-b-hairline pb-4">
-            About Traced.
+            About Inkreel.
           </h2>
           <div className="p-8 border-hairline bg-white/50 flex flex-col gap-4">
             <p className="text-[14px] text-[#737373] leading-relaxed italic">
-              Traced is designed as a minimalist, focused diary for your media consumption. It prioritizes data clarity and utilitarian aesthetics over social noise.
+              Inkreel is designed as a minimalist, focused diary for your media consumption. It prioritizes data clarity and utilitarian aesthetics over social noise.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-[11px] font-sans font-bold text-traced-dark uppercase tracking-widest">Version 3.0.0</span>

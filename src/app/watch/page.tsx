@@ -140,12 +140,8 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
                   <span className="text-traced-accent font-serif italic text-xl font-medium">({items.length})</span>
                 </div>
                 {/* Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 gap-y-16 p-10 bg-white">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 gap-y-16 p-10">
                   {items.map((item) => {
-                    const genres = item.genres?.toLowerCase() || "";
-                    let subcategory = item.type === "tv" ? "TV SHOW" : item.type === "movie" ? "MOVIE" : item.type.toUpperCase();
-                    if (genres.includes("documentary")) subcategory = "DOCUMENTARY";
-                    if (item.type === "anime") subcategory = "ANIME";
 
                     return (
                       <Link key={item.id} href={`/items/${item.id}`} className="flex flex-col gap-6 group">
@@ -168,10 +164,6 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
                             {item.title}
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="uppercase tracking-[0.1em] text-[#737373] font-sans text-[11px] font-bold">
-                              {subcategory}
-                            </span>
-                            <span className="text-[#D4D4D4]">•</span>
                             <span className="uppercase tracking-[0.1em] text-[#A3A3A3] font-sans text-[11px]">
                               {item.releaseYear || item.year || ""}
                             </span>
