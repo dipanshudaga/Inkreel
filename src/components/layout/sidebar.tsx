@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useSearchStore } from "@/store/use-search-store";
 import { useQuickLogStore } from "@/store/use-quick-log-store";
 
 export function Sidebar() {
   const { open } = useSearchStore();
+  const pathname = usePathname();
 
   const [counts, setCounts] = useState({ watch: 0, read: 0 });
 
@@ -30,19 +32,19 @@ export function Sidebar() {
       <div className="flex flex-col grow">
         {/* Diaries Section */}
         <div className="flex flex-col border-b-hairline">
-          <Link href="/watch" className="items-center flex justify-between py-4 px-6 hover:bg-black/5 transition-colors cursor-pointer text-left">
-            <span className="tracking-[0.05em] uppercase text-traced-dark font-sans font-medium text-sm text-left">
+          <Link href="/watch" className={`items-center flex justify-between py-4 px-6 transition-colors cursor-pointer text-left ${pathname.startsWith('/watch') ? 'bg-traced-accent text-white' : 'hover:bg-black/5'}`}>
+            <span className={`tracking-[0.05em] uppercase font-sans font-semibold text-sm text-left ${pathname.startsWith('/watch') ? 'text-white' : 'text-traced-dark'}`}>
               Watch
             </span>
-            <span className="tracking-[0.05em] uppercase text-[#737373] font-sans font-medium text-xs">
+            <span className={`tracking-[0.05em] uppercase font-sans font-medium text-xs ${pathname.startsWith('/watch') ? 'text-white/70' : 'text-[#737373]'}`}>
               {counts.watch}
             </span>
           </Link>
-          <Link href="/read" className="items-center flex justify-between py-4 px-6 hover:bg-black/5 transition-colors cursor-pointer text-left">
-            <span className="tracking-[0.05em] uppercase text-traced-dark font-sans font-medium text-sm text-left">
+          <Link href="/read" className={`items-center flex justify-between py-4 px-6 transition-colors cursor-pointer text-left ${pathname.startsWith('/read') ? 'bg-traced-accent text-white' : 'hover:bg-black/5'}`}>
+            <span className={`tracking-[0.05em] uppercase font-sans font-semibold text-sm text-left ${pathname.startsWith('/read') ? 'text-white' : 'text-traced-dark'}`}>
               Read
             </span>
-            <span className="tracking-[0.05em] uppercase text-[#737373] font-sans font-medium text-xs">
+            <span className={`tracking-[0.05em] uppercase font-sans font-medium text-xs ${pathname.startsWith('/read') ? 'text-white/70' : 'text-[#737373]'}`}>
               {counts.read}
             </span>
           </Link>
