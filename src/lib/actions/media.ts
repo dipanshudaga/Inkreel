@@ -1,45 +1,67 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { media } from "@/lib/db/schema";
+import { media, logs } from "@/lib/db/schema";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { getMovieById, getTVById } from "@/lib/api/tmdb";
+import { getBookById } from "@/lib/api/google-books";
+import { getAniListById } from "@/lib/api/anilist";
 
-export async function addToArchive(itemData: any) {
+export async function saveMediaAction(externalId: string, status: string, rating?: number | null) {
   try {
-    const externalId = itemData.id;
+    // 1. Fetch full details if we only have the external ID
+    let itemData: any = null;
     
-    // Ensure we don't have duplicates by checking externalId
-    const existing = await db.query.media.findFirst({
-      where: eq(media.externalId, externalId),
-    });
-
-    if (existing) {
-      return { success: true, message: "Item already in archive" };
+    if (externalId.startsWith("tmdb-movie-")) {
+      itemData = await getMovieById(externalId.replace("tmdb-movie-", ""));
+    } else if (externalId.startsWith("tmdb-tv-")) {
+      itemData = await getTVById(externalId.replace("tmdb-tv-", ""));
+    } else if (externalId.startsWith("gb-")) {
+      itemData = await getBookById(externalId.replace("gb-", ""));
+    } else if (externalId.startsWith("anilist-")) {
+      itemData = await getAniListById(parseInt(externalId.replace("anilist-", ""), 10));
     }
 
-    const [newItem] = await db.insert(media).values({
+    if (!itemData) throw new Error("Could not fetch media data");
+
+    // 2. Map status to DB values
+    // watched -> completed
+    // watchlist -> plan_to_watch / plan_to_read
+    const dbStatus = status === "watched" ? "completed" : 
+                     (itemData.category === "read" ? "plan_to_read" : "plan_to_watch");
+
+    // 3. Insert into DB
+    const [newMedia] = await db.insert(media).values({
       externalId: externalId,
-      type: itemData.type,
       title: itemData.title,
+      category: itemData.category,
+      type: itemData.type,
       posterUrl: itemData.posterUrl,
-      releaseYear: itemData.year,
+      backdropUrl: itemData.backdropUrl,
+      releaseYear: itemData.releaseYear || itemData.year,
       creator: itemData.creator,
+      genres: Array.isArray(itemData.genres) ? itemData.genres.join(", ") : (itemData.genres || ""),
+      runtime: itemData.runtime,
       description: itemData.description,
-      status: 'planned',
-      rating: 0,
-      runtime: itemData.runtime || 0,
-      genres: Array.isArray(itemData.genres) ? itemData.genres.join(", ") : "",
-      updatedAt: new Date(),
+      status: dbStatus,
+      rating: rating || null,
+      completedAt: status === "watched" ? new Date().toISOString() : null,
     }).returning();
 
-    revalidatePath("/watch");
-    revalidatePath("/read");
-    revalidatePath(`/items/${newItem.id}`);
+    // 4. Create initial log
+    await db.insert(logs).values({
+      mediaId: newMedia.id,
+      date: new Date().toISOString(),
+      action: status === "watched" ? "finished" : "added",
+      note: status === "watched" ? "Manually added to archive." : "Added to watchlist.",
+    });
 
-    return { success: true, id: newItem.id };
+    revalidatePath("/");
+    revalidatePath(`/${itemData.category}`);
+    
+    return { success: true, id: newMedia.id };
   } catch (error) {
-    console.error("Add to Archive Error:", error);
-    return { success: false, error: "Failed to add item to archive" };
+    console.error("Save media failed:", error);
+    return { success: false, error: "Failed to save to archive" };
   }
 }

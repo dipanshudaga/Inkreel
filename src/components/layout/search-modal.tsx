@@ -9,6 +9,7 @@ export function SearchModal() {
   const { isOpen, close, query, setQuery } = useSearchStore();
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -90,6 +91,23 @@ export function SearchModal() {
           </div>
         </div>
 
+        {/* Filters */}
+        <div className="flex items-center gap-2 px-8 py-3 bg-[#FAF9F6] border-b border-[#1A1A1A]">
+          {['all', 'movie', 'tv', 'anime', 'book', 'manga'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setActiveFilter(f)}
+              className={`px-3 py-1 text-[10px] uppercase tracking-widest font-bold border transition-all duration-200 ${
+                activeFilter === f 
+                  ? 'bg-traced-dark text-white border-traced-dark' 
+                  : 'bg-white text-[#737373] border-[#E5E5E5] hover:border-[#1A1A1A] hover:text-traced-dark'
+              }`}
+            >
+              {f === 'all' ? 'All' : f === 'tv' ? 'TV Shows' : f.charAt(0).toUpperCase() + f.slice(1) + 's'}
+            </button>
+          ))}
+        </div>
+
         <div className="flex flex-col py-4 max-h-[60vh] overflow-y-auto">
           {query.length > 0 && results.length === 0 && !isLoading && (
             <div className="px-8 py-4 text-traced-gray font-sans text-sm uppercase tracking-wider">
@@ -101,43 +119,60 @@ export function SearchModal() {
             <>
               {/* Categorized results */}
               {['movie', 'tv', 'anime', 'book', 'manga'].map(type => {
+                if (activeFilter !== 'all' && activeFilter !== type) return null;
+                
                 const typeResults = results.filter(r => r.type === type);
                 if (typeResults.length === 0) return null;
 
                 return (
                   <div key={type} className="flex flex-col">
-                    <div className="py-2 px-8">
+                    <div className="py-2 px-8 flex items-center justify-between">
                       <span className="tracking-[0.05em] uppercase text-[#737373] font-sans font-semibold text-[11px]">
-                        {type.charAt(0).toUpperCase() + type.slice(1)}s
+                        {type === 'tv' ? 'TV Shows' : type.charAt(0).toUpperCase() + type.slice(1) + 's'}
+                      </span>
+                      <span className="text-[10px] text-traced-gray font-sans uppercase tracking-widest">
+                        {typeResults.length} {typeResults.length === 1 ? 'result' : 'results'}
                       </span>
                     </div>
-                    {typeResults.map((item, idx) => (
-                      <div 
-                        key={item.id} 
-                        className={`flex items-center py-3 px-8 gap-4 cursor-pointer hover:bg-traced-surface transition-colors border-l-2 ${idx === 0 && type === results[0].type ? 'border-traced-accent bg-traced-surface' : 'border-transparent'}`}
-                        onClick={() => {
-                          router.push(`/items/${item.id}`);
-                          close();
-                        }}
-                      >
-                        <div className="w-10 h-15 shrink-0 overflow-hidden bg-[#CCCCCC] border border-[#1A1A1A]">
-                          {item.posterUrl && (
-                            <div 
-                              className="bg-cover bg-center size-full" 
-                              style={{ backgroundImage: `url(${item.posterUrl})` }} 
-                            />
-                          )}
-                        </div>
-                        <div className="grow">
-                          <div className="text-[20px] leading-tight text-traced-dark font-serif">
-                            {item.title}
+                    {typeResults.map((item, idx) => {
+                      let sublabel = item.year || "";
+                      if (item.type === 'anime' && item.format) {
+                        sublabel = `${item.format.replace('_', ' ')} • ${item.year || "N/A"}`;
+                      }
+                      
+                      return (
+                        <div 
+                          key={item.id} 
+                          className={`flex items-center py-3 px-8 gap-4 cursor-pointer hover:bg-traced-surface transition-colors border-l-2 ${idx === 0 && (activeFilter !== 'all' || type === results[0].type) ? 'border-traced-accent bg-traced-surface' : 'border-transparent'}`}
+                          onClick={() => {
+                            router.push(`/items/${item.id}`);
+                            close();
+                          }}
+                        >
+                          <div className="w-10 h-15 shrink-0 overflow-hidden bg-[#CCCCCC] border border-[#1A1A1A]">
+                            {item.posterUrl ? (
+                              <img 
+                                src={item.posterUrl} 
+                                className="size-full object-cover"
+                                alt=""
+                              />
+                            ) : (
+                              <div className="size-full flex items-center justify-center text-traced-gray text-[8px] uppercase tracking-widest text-center px-1">
+                                No Cover
+                              </div>
+                            )}
                           </div>
-                          <div className="uppercase tracking-[0.05em] mt-1 text-[#737373] font-sans text-xs">
-                            {item.year}{item.status ? ` • ${item.completedAt ? `Logged ${format(new Date(item.completedAt), "MMM d, yyyy")}` : 'In Archive'}` : ''}
+                          <div className="grow">
+                            <div className="text-[20px] leading-tight text-traced-dark font-serif">
+                              {item.title}
+                            </div>
+                            <div className="uppercase tracking-[0.05em] mt-1 text-[#737373] font-sans text-xs">
+                              {sublabel}{item.status ? ` • ${item.completedAt ? `Logged ${format(new Date(item.completedAt), "MMM d, yyyy")}` : 'In Archive'}` : ''}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 );
               })}
@@ -145,7 +180,7 @@ export function SearchModal() {
           )}
         </div>
 
-        <div className="flex items-center py-4 px-8 bg-traced-bg border-t border-[#1A1A1A]">
+        <div className="flex items-center py-4 px-8 bg-[#FAF9F6] border-t border-[#1A1A1A]">
           <span className="tracking-[0.05em] uppercase text-[#737373] font-sans text-[11px]">
             Press Enter to select • Use arrows to navigate
           </span>

@@ -27,7 +27,7 @@ async function safeAniListFetch(query: string, variables: any) {
 export async function searchAniList(query: string, type: "ANIME" | "MANGA") {
   const searchQuery = `
     query ($search: String, $type: MediaType) {
-      Page(perPage: 10) {
+      Page(perPage: 20) {
         media(search: $search, type: $type) {
           id
           title {
@@ -63,6 +63,7 @@ export async function searchAniList(query: string, type: "ANIME" | "MANGA") {
     id: `anilist-${m.id}`,
     category: type === "ANIME" ? "watch" : "read",
     type: type === "ANIME" ? "anime" : "manga",
+    format: m.format, // TV, MOVIE, OVA, etc.
     title: m.title.english || m.title.romaji || m.title.native,
     slug: (m.title.english || m.title.romaji || m.title.native)
       .toLowerCase()
