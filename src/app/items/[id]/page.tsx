@@ -90,10 +90,10 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
         {/* Right Side: Information */}
         <div className="flex-1 flex flex-col overflow-y-auto">
-          {/* Header Section */}
-          <div className="py-16 px-16 border-b-hairline flex justify-between items-start">
-            <div className="flex flex-col gap-6 max-w-2xl">
-              <h1 className="tracking-[-0.02em] text-traced-dark font-serif font-medium text-7xl leading-[0.95]">
+          {/* Header Section — relative so X can be absolute */}
+          <div className="relative py-12 px-16 border-b-hairline">
+            <div className="flex flex-col gap-6 max-w-xl pr-16">
+              <h1 className="tracking-[-0.02em] text-traced-dark font-serif font-medium text-4xl leading-tight">
                 {item.title}
               </h1>
               <div className="flex items-center gap-4 text-[#737373] font-sans text-sm font-medium uppercase tracking-[0.05em]">
@@ -109,12 +109,12 @@ export default async function ItemPage({ params }: ItemPageProps) {
               </div>
             </div>
 
-            {/* Close / Back button */}
+            {/* Close / Back button — absolute top-right */}
             <Link
               href="javascript:history.back()"
-              className="size-10 flex items-center justify-center border-hairline bg-white hover:bg-traced-dark hover:text-white transition-colors shrink-0 cursor-pointer"
+              className="absolute top-8 right-8 size-9 flex items-center justify-center border-hairline bg-white hover:bg-traced-dark hover:text-white transition-colors cursor-pointer"
             >
-              <X size={18} strokeWidth={2} />
+              <X size={16} strokeWidth={2} />
             </Link>
           </div>
           
