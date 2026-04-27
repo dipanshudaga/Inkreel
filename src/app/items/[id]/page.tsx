@@ -260,4 +260,3 @@ export default async function ItemPage({ params }: ItemPageProps) {
     </div>
   );
 }
-}
