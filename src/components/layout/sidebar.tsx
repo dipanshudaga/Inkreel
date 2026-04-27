@@ -62,10 +62,10 @@ export function Sidebar() {
           </div>
           <button 
             onClick={() => useQuickLogStore.getState().openQuickLog()}
-            className="items-center flex py-4 px-6 gap-3 bg-traced-surface border-b-hairline hover:bg-traced-surface/80 transition-colors w-full cursor-pointer"
+            className="items-center flex py-4 px-6 gap-3 hover:bg-traced-surface transition-colors w-full cursor-pointer group"
           >
-            <Plus size={16} className="text-traced-accent" strokeWidth={2} />
-            <span className="tracking-[0.05em] uppercase text-traced-accent font-sans font-medium text-sm">
+            <Plus size={16} className="text-[#737373] group-hover:text-traced-accent transition-colors" strokeWidth={2} />
+            <span className="tracking-[0.05em] uppercase text-[#737373] group-hover:text-traced-accent font-sans font-medium text-sm transition-colors">
               Quick Log
             </span>
           </button>
@@ -84,12 +84,18 @@ export function Sidebar() {
               Cmd+K
             </kbd>
           </button>
-          <button className="items-center flex justify-between py-4 px-6 border-t-hairline hover:bg-black/5 transition-colors w-full cursor-pointer text-left">
+          <button 
+            onClick={() => alert("CSV Import coming soon!")}
+            className="items-center flex justify-between py-4 px-6 border-t-hairline hover:bg-black/5 transition-colors w-full cursor-pointer text-left"
+          >
             <span className="tracking-[0.05em] uppercase text-traced-dark font-sans font-medium text-[13px]">
               Import
             </span>
           </button>
-          <button className="items-center flex justify-between py-4 px-6 border-t-hairline hover:bg-black/5 transition-colors w-full cursor-pointer text-left">
+          <button 
+            onClick={() => alert("Settings coming soon!")}
+            className="items-center flex justify-between py-4 px-6 border-t-hairline hover:bg-black/5 transition-colors w-full cursor-pointer text-left"
+          >
             <span className="tracking-[0.05em] uppercase text-traced-dark font-sans font-medium text-[13px]">
               Settings
             </span>
