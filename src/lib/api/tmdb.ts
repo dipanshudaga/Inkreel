@@ -33,13 +33,13 @@ async function safeTMDBFetch(url: string) {
     
     if (!res.ok) {
       console.error(`TMDB API Error: ${res.status} ${res.statusText} for URL: ${finalUrl}`);
-      return { results: [] };
+      return null;
     }
     
     return await res.json();
   } catch (error: any) {
     console.error(`TMDB Fetch Exception for ${url}:`, error?.message || error);
-    return { results: [] };
+    return null;
   }
 }
 export const MOCK_MOVIES = [
@@ -138,6 +138,8 @@ export async function searchTMDB(query: string) {
       safeTMDBFetch(`${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}`),
       safeTMDBFetch(`${TMDB_BASE_URL}/search/tv?query=${encodeURIComponent(query)}`)
     ]);
+    
+    if (!movieData && !tvData) return [];
 
     const movies = (movieData.results || []).map((m: any) => {
       const genres = mapGenres(m.genre_ids);
@@ -192,6 +194,8 @@ export async function getTrendingWatch(page: number = 1) {
       safeTMDBFetch(`${TMDB_BASE_URL}/trending/movie/week?page=${page}`),
       safeTMDBFetch(`${TMDB_BASE_URL}/trending/tv/week?page=${page}`)
     ]);
+    
+    if (!movieData && !tvData) return MOCK_MOVIES;
 
     const movies = (movieData.results || []).map((m: any) => {
       const genres = mapGenres(m.genre_ids);
