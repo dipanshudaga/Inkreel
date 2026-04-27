@@ -14,7 +14,7 @@ export const MOCK_BOOKS = [
     description: "Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world where the only thing of value is the 'spice' melange.",
     genres: ["Science Fiction", "Epic"],
     rating: 5,
-    pageCount: 688,
+    runtime: 688,
   },
   {
     id: "gb-project-hail-mary",
@@ -28,7 +28,7 @@ export const MOCK_BOOKS = [
     description: "Ryland Grace is the sole survivor on a desperate, last-chance mission—and if he fails, humanity and the earth itself will perish.",
     genres: ["Science Fiction", "Thriller"],
     rating: 4.8,
-    pageCount: 476,
+    runtime: 476,
   },
   {
     id: "gb-dark-matter",
@@ -42,7 +42,7 @@ export const MOCK_BOOKS = [
     description: "'Are you happy with your life?' Those are the last words Jason Dessen hears before the masked abductor knocks him unconscious.",
     genres: ["Science Fiction", "Mystery"],
     rating: 4.5,
-    pageCount: 342,
+    runtime: 342,
   },
   {
     id: "gb-neuromancer",
@@ -56,7 +56,7 @@ export const MOCK_BOOKS = [
     description: "Case is the sharpest data-thief in the matrix, until he crossed the wrong people and they burned his nervous system with a toxin.",
     genres: ["Cyberpunk", "Sci-Fi"],
     rating: 4.7,
-    pageCount: 271,
+    runtime: 271,
   }
 ];
 

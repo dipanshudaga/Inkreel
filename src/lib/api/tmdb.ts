@@ -35,7 +35,7 @@ export const MOCK_MOVIES = [
     description: "Follow the mythic journey of Paul Atreides as he unites with Chani and the Fremen while on a path of revenge against the conspirators who destroyed his family.",
     genres: ["Sci-Fi", "Adventure"],
     rating: 4.5,
-    duration: 166
+    runtime: 166
   },
   {
     id: "tmdb-movie-inception",
@@ -50,7 +50,7 @@ export const MOCK_MOVIES = [
     description: "Cobb, a skilled thief who commits corporate espionage by infiltrating the subconscious of his targets is offered a chance to regain his old life.",
     genres: ["Sci-Fi", "Action", "Drama"],
     rating: 4.8,
-    duration: 148
+    runtime: 148
   },
   {
     id: "tmdb-movie-dark-knight",
@@ -65,7 +65,7 @@ export const MOCK_MOVIES = [
     description: "Batman raises the stakes in his war on crime. With the help of Lt. Jim Gordon and District Attorney Harvey Dent, Batman sets out to dismantle the remaining criminal organizations that plague the streets.",
     genres: ["Action", "Crime", "Drama"],
     rating: 5.0,
-    duration: 152
+    runtime: 152
   }
 ];
 
@@ -233,7 +233,7 @@ export async function getMovieById(id: string) {
       description: movie.overview,
       genres,
       rating: movie.vote_average / 2,
-      duration: movie.runtime,
+      runtime: movie.runtime,
     };
   } catch (error) {
     return null;
@@ -260,7 +260,7 @@ export async function getTVById(id: string) {
       description: tv.overview,
       genres,
       rating: tv.vote_average / 2,
-      duration: tv.episode_run_time?.[0],
+      runtime: tv.episode_run_time?.[0],
     };
   } catch (error) {
     return null;

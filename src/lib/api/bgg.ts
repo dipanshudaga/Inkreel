@@ -31,6 +31,7 @@ export async function getBGGDetails(ids: string[]) {
         year: item.yearpublished?.["@_value"] ? parseInt(item.yearpublished["@_value"]) : null,
         players: `${item.minplayers?.["@_value"]}-${item.maxplayers?.["@_value"]}`,
         playtime: item.playingtime?.["@_value"],
+        runtime: item.playingtime?.["@_value"] ? parseInt(item.playingtime["@_value"]) : 0,
         rating: item.statistics?.ratings?.average?.["@_value"] ? parseFloat(item.statistics.ratings.average["@_value"]) / 2 : 0,
       };
     });
@@ -72,6 +73,7 @@ export async function searchBGG(query: string) {
       rating: detail.rating,
       players: detail.players,
       playtime: detail.playtime,
+      runtime: detail.runtime,
     }));
   } catch (error) {
     console.error("BGG Search Error:", error);
@@ -94,6 +96,7 @@ export const MOCK_GAMES = [
     rating: 4.9,
     players: "2–4",
     playtime: "60–120 Min",
+    runtime: 120,
   },
   {
     id: "bgg-167791",
@@ -109,6 +112,7 @@ export const MOCK_GAMES = [
     rating: 4.8,
     players: "1–5",
     playtime: "120 Min",
+    runtime: 120,
   },
   {
     id: "bgg-291457",
@@ -124,6 +128,7 @@ export const MOCK_GAMES = [
     rating: 4.7,
     players: "1–4",
     playtime: "30–120 Min",
+    runtime: 120,
   }
 ];
 
