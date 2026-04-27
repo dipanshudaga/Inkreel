@@ -19,6 +19,9 @@ export function AddToArchiveButton({ item }: AddToArchiveButtonProps) {
     const result = await addToArchive(item);
     if (result.success) {
       setIsSuccess(true);
+      if (result.id) {
+        router.push(`/items/${result.id}`);
+      }
       router.refresh();
     } else {
       alert(result.error || "Something went wrong");

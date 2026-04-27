@@ -24,8 +24,19 @@ export async function GET(req: NextRequest) {
   const { results: globalResults } = await searchMediaAction(query);
   
   // 3. Merge results (prioritize local)
-  const localIds = new Set(localResults.map(r => r.id));
-  const uniqueGlobal = (globalResults || []).filter(g => !localIds.has(g.id));
+  const externalToLocal = new Map(localResults.map(r => [r.externalId, r.id]));
+  
+  const uniqueGlobal = (globalResults || []).map(g => {
+    // If we already have this in our DB, use the local UUID instead of the external string
+    if (externalToLocal.has(g.id)) {
+      return localResults.find(l => l.externalId === g.id);
+    }
+    return g;
+  });
 
-  return NextResponse.json([...localResults, ...uniqueGlobal]);
+  // Filter out any global results that are now duplicates of local results (already covered by map)
+  const localIds = new Set(localResults.map(r => r.id));
+  const filteredGlobal = uniqueGlobal.filter(g => !localIds.has(g.id));
+
+  return NextResponse.json([...localResults, ...filteredGlobal]);
 }
