@@ -62,7 +62,7 @@ export async function searchAniList(query: string, type: "ANIME" | "MANGA") {
   return data.Page.media.map((m: any) => ({
     id: `anilist-${m.id}`,
     category: type === "ANIME" ? "watch" : "read",
-    subType: type === "ANIME" ? "anime" : "manga",
+    type: type === "ANIME" ? "anime" : "manga",
     title: m.title.english || m.title.romaji || m.title.native,
     slug: (m.title.english || m.title.romaji || m.title.native)
       .toLowerCase()
@@ -118,13 +118,12 @@ export async function getAniListById(id: number) {
   const m = data?.Media;
   if (!m) return null;
 
-  const type = m.type === "ANIME" ? "watch" : "read";
-  const subType = m.type === "ANIME" ? "anime" : "manga";
+  const type = m.type === "ANIME" ? "anime" : "manga";
 
   return {
     id: `anilist-${m.id}`,
-    category: type,
-    subType,
+    category: m.type === "ANIME" ? "watch" : "read",
+    type,
     title: m.title.english || m.title.romaji || m.title.native,
     slug: (m.title.english || m.title.romaji || m.title.native)
       .toLowerCase()

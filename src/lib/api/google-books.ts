@@ -99,7 +99,7 @@ export async function searchGoogleBooks(query: string, startIndex: number = 0) {
       return {
         id: `gb-${book.id}`,
         category: "read",
-        subType,
+        type: isManga ? "manga" : "book",
         title: info.title,
         slug: info.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         posterUrl: info.imageLinks?.thumbnail?.replace("http:", "https:"),
@@ -140,7 +140,7 @@ export async function getBookById(id: string) {
     return {
       id: `gb-${book.id}`,
       category: "read" as const,
-      subType: "book",
+      type: "book",
       title: info.title,
       slug: info.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       posterUrl: info.imageLinks?.thumbnail?.replace("http:", "https:"),

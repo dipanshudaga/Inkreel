@@ -27,11 +27,15 @@ export async function GET(req: NextRequest) {
   const externalToLocal = new Map(localResults.map(r => [r.externalId, r.id]));
   
   const uniqueGlobal = (globalResults || []).map(g => {
+    // Standardize 'subType' to 'type' for the frontend
+    const normalized = { ...g, type: g.type || g.subType };
+
     // If we already have this in our DB, use the local UUID instead of the external string
     if (externalToLocal.has(g.id)) {
-      return localResults.find(l => l.externalId === g.id);
+      const local = localResults.find(l => l.externalId === g.id);
+      return { ...local, status: local?.status || 'archived' };
     }
-    return g;
+    return normalized;
   });
 
   // Filter out any global results that are now duplicates of local results (already covered by map)

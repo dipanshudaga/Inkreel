@@ -20,7 +20,7 @@ export async function addToArchive(itemData: any) {
 
     const [newItem] = await db.insert(media).values({
       externalId: externalId,
-      type: itemData.subType,
+      type: itemData.type,
       title: itemData.title,
       posterUrl: itemData.posterUrl,
       releaseYear: itemData.year,

@@ -121,11 +121,11 @@ export async function searchTMDB(query: string) {
     const movies = (movieData.results || []).map((m: any) => {
       const genres = mapGenres(m.genre_ids);
       const isAnimated = genres.includes("Animation");
-      const subType = (isAnimated && m.original_language === "ja") ? "anime" : (isAnimated ? "animation" : "movie");
+      const type = (isAnimated && m.original_language === "ja") ? "anime" : "movie";
       return {
         id: `tmdb-movie-${m.id}`,
         category: "watch" as const,
-        subType,
+        type,
         title: m.title,
         slug: m.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
@@ -140,11 +140,11 @@ export async function searchTMDB(query: string) {
     const tvs = (tvData.results || []).map((m: any) => {
       const genres = mapGenres(m.genre_ids);
       const isAnimated = genres.includes("Animation");
-      const subType = (isAnimated && m.original_language === "ja") ? "anime" : (isAnimated ? "animation" : "series");
+      const type = (isAnimated && m.original_language === "ja") ? "anime" : "tv";
       return {
         id: `tmdb-tv-${m.id}`,
         category: "watch" as const,
-        subType,
+        type,
         title: m.name,
         slug: m.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
@@ -175,11 +175,11 @@ export async function getTrendingWatch(page: number = 1) {
     const movies = (movieData.results || []).map((m: any) => {
       const genres = mapGenres(m.genre_ids);
       const isAnimated = genres.includes("Animation");
-      const subType = (isAnimated && m.original_language === "ja") ? "anime" : (isAnimated ? "animation" : "movie");
+      const type = (isAnimated && m.original_language === "ja") ? "anime" : "movie";
       return {
         id: `tmdb-movie-${m.id}`,
         category: "watch" as const,
-        subType,
+        type,
         title: m.title,
         slug: m.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
@@ -192,11 +192,11 @@ export async function getTrendingWatch(page: number = 1) {
     const tvs = (tvData.results || []).map((m: any) => {
       const genres = mapGenres(m.genre_ids);
       const isAnimated = genres.includes("Animation");
-      const subType = (isAnimated && m.original_language === "ja") ? "anime" : (isAnimated ? "animation" : "series");
+      const type = (isAnimated && m.original_language === "ja") ? "anime" : "tv";
       return {
         id: `tmdb-tv-${m.id}`,
         category: "watch" as const,
-        subType,
+        type,
         title: m.name,
         slug: m.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
@@ -223,7 +223,7 @@ export async function getMovieById(id: string) {
     return {
       id: `tmdb-movie-${movie.id}`,
       category: "watch" as const,
-      subType: (isAnimated && movie.original_language === "ja") ? "anime" : (isAnimated ? "animation" : "movie"),
+      type: (isAnimated && movie.original_language === "ja") ? "anime" : "movie",
       title: movie.title,
       slug: movie.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
@@ -250,7 +250,7 @@ export async function getTVById(id: string) {
     return {
       id: `tmdb-tv-${tv.id}`,
       category: "watch" as const,
-      subType: (isAnimated && tv.original_language === "ja") ? "anime" : (isAnimated ? "animation" : "series"),
+      type: (isAnimated && tv.original_language === "ja") ? "anime" : "tv",
       title: tv.name,
       slug: tv.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       posterUrl: tv.poster_path ? `https://image.tmdb.org/t/p/w500${tv.poster_path}` : null,

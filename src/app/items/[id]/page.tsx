@@ -107,13 +107,11 @@ export default async function ItemPage({ params }: ItemPageProps) {
                 Avg Rating
               </div>
             </div>
-          </div>
-
-          {/* Details Sections */}
+          </di          {/* Details Sections */}
           <div className="flex flex-col grow">
              {/* Synopsis */}
-             <div className="py-12 px-16 border-b-hairline flex flex-col gap-8">
-               <h3 className="uppercase tracking-[0.05em] text-[#737373] font-sans font-semibold text-[13px]">
+             <div className="py-12 px-16 border-b-hairline flex flex-col gap-6">
+               <h3 className="uppercase tracking-[0.1em] text-[#A3A3A3] font-sans font-bold text-[11px]">
                  Synopsis
                </h3>
                <p className="text-traced-dark font-serif text-xl leading-relaxed max-w-2xl">
@@ -121,89 +119,51 @@ export default async function ItemPage({ params }: ItemPageProps) {
                </p>
              </div>
 
-             {/* Log Section */}
-             <div className="py-12 px-16 flex flex-col gap-8 grow">
-                <h3 className="uppercase tracking-[0.05em] text-[#737373] font-sans font-semibold text-[13px]">
-                  Your Log
-                </h3>
+             {/* Letterboxd-style Action Bar */}
+             <div className="py-12 px-16 border-b-hairline flex items-center gap-16">
+                <div className="flex flex-col items-center gap-3 group cursor-pointer">
+                  <div className={`size-14 rounded-full border-hairline flex items-center justify-center transition-all ${item.status === 'completed' ? 'bg-traced-accent border-traced-accent text-white' : 'bg-white hover:border-traced-accent text-[#737373]'}`}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </div>
+                  <span className="uppercase tracking-[0.1em] text-[#737373] font-sans font-bold text-[10px]">Watched</span>
+                </div>
 
-                 {isExternal ? (
-                   <div className="flex flex-col items-center justify-center py-20 border-hairline border-dashed bg-white/50 gap-6">
-                     <div className="flex flex-col items-center gap-2">
-                       <span className="text-[#737373] font-sans text-sm uppercase tracking-widest">Global Discovery</span>
-                       <p className="text-[#A1A19A] font-serif italic text-base">This item is not in your archive yet.</p>
-                     </div>
-                     <AddToArchiveButton item={item} />
-                   </div>
-                 ) : (
-                   <>
-                     {latestLog ? (
-                       <div className="flex flex-col gap-8">
-                         <div className="flex items-center bg-[#EFEEE8] border-hairline p-6 divide-x divide-[#D4D4D4]">
-                           <div className="flex flex-col gap-2 pr-12">
-                             <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Rating</span>
-                             <div className="flex gap-1 text-traced-accent">
-                               {[...Array(5)].map((_, i) => (
-                                 <Star 
-                                   key={i} 
-                                   size={16} 
-                                   fill={i < Math.floor(item.rating || 0) ? "currentColor" : "none"} 
-                                   strokeWidth={2}
-                                 />
-                               ))}
-                             </div>
-                           </div>
-                           <div className="flex flex-col gap-2 px-12">
-                             <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Date Logged</span>
-                             <span className="text-traced-dark font-sans font-medium text-[15px]">
-                               {format(new Date(latestLog.date), "MMM d, yyyy")}
-                             </span>
-                           </div>
-                           <div className="flex flex-col gap-2 pl-12">
-                             <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Tags</span>
-                             <div className="flex gap-2">
-                                <span className="px-2 py-0.5 border-hairline text-traced-dark font-sans text-[11px] bg-white">Sci-Fi</span>
-                                <span className="px-2 py-0.5 border-hairline text-traced-dark font-sans text-[11px] bg-white">Epic</span>
-                             </div>
-                           </div>
-                         </div>
+                <div className="flex flex-col items-center gap-3 group cursor-pointer">
+                  <div className={`size-14 rounded-full border-hairline flex items-center justify-center transition-all ${item.status === 'plan_to_watch' ? 'bg-[#3B82F6] border-[#3B82F6] text-white' : 'bg-white hover:border-[#3B82F6] text-[#737373]'}`}>
+                    <Plus size={24} strokeWidth={3} />
+                  </div>
+                  <span className="uppercase tracking-[0.1em] text-[#737373] font-sans font-bold text-[10px]">Watchlist</span>
+                </div>
 
-                         <div className="bg-white border-hairline p-10">
-                            <p className="text-traced-dark font-serif text-2xl italic leading-relaxed">
-                              {latestLog.notes || "No notes for this entry."}
-                            </p>
-                         </div>
-                       </div>
-                     ) : (
-                       <div className="flex flex-col items-center justify-center py-20 border-hairline border-dashed bg-white/50 gap-4">
-                         <span className="text-[#737373] font-sans text-sm uppercase tracking-widest">No logs found</span>
-                         <LogButton mediaId={item.id} type={item.type} />
-                       </div>
-                     )}
-                   </>
-                 )}
+                <div className="flex flex-col items-center gap-3 group cursor-pointer">
+                  <div className={`size-14 rounded-full border-hairline flex items-center justify-center transition-all ${item.rating >= 4.5 ? 'bg-[#EF4444] border-[#EF4444] text-white' : 'bg-white hover:border-[#EF4444] text-[#737373]'}`}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill={item.rating >= 4.5 ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                    </svg>
+                  </div>
+                  <span className="uppercase tracking-[0.1em] text-[#737373] font-sans font-bold text-[10px]">Love</span>
+                </div>
              </div>
+
+             {/* Recent Activity / Notes */}
+             {!isExternal && (
+               <div className="py-12 px-16 flex flex-col gap-8">
+                 <h3 className="uppercase tracking-[0.1em] text-[#A3A3A3] font-sans font-bold text-[11px]">
+                   Notes
+                 </h3>
+                 <div className="bg-white border-hairline p-10 max-w-2xl">
+                    <p className="text-traced-dark font-serif text-2xl italic leading-relaxed">
+                      {item.logs?.[0]?.notes || "No notes for this entry yet. Click to add a log."}
+                    </p>
+                 </div>
+               </div>
+             )}
           </div>
         </div>
       </div>
-
-      {/* Bottom Bar */}
-      <footer className="h-20 shrink-0 flex items-center justify-between px-16 bg-traced-bg border-t-hairline z-10">
-        <Link 
-          href={item.type === 'book' || item.type === 'manga' ? '/read' : '/watch'} 
-          className="flex items-center gap-3 text-traced-dark hover:gap-4 transition-all"
-        >
-          <ArrowLeft size={18} />
-          <span className="uppercase tracking-[0.1em] font-sans text-[13px] font-medium">Back to Archive</span>
-        </Link>
-        
-        <div className="flex items-center gap-12">
-           <span className="uppercase tracking-[0.1em] text-[#737373] font-sans text-[13px] font-medium">
-             {item.title}
-           </span>
-           <LogButton mediaId={item.id} type={item.type} />
-        </div>
-      </footer>
     </div>
   );
 }
