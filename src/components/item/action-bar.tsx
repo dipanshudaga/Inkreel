@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Plus, Eye, Heart, Loader2 } from "lucide-react";
 import { saveMediaAction } from "@/lib/actions/media";
