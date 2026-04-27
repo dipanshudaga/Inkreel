@@ -6,15 +6,19 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 
 interface WatchDiaryProps {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; type?: string }>;
 }
 
 export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
-  const { filter = "all" } = await searchParams;
+  const { filter = "all", type = "all" } = await searchParams;
 
-  const conditions: any[] = [
-    or(eq(media.type, "movie"), eq(media.type, "anime"), eq(media.type, "tv"))
-  ];
+  const conditions: any[] = [];
+  
+  if (type !== "all") {
+    conditions.push(eq(media.type, type));
+  } else {
+    conditions.push(or(eq(media.type, "movie"), eq(media.type, "anime"), eq(media.type, "tv")));
+  }
 
   if (filter === "watched") {
     conditions.push(eq(media.status, "completed"));
@@ -47,6 +51,13 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
     { label: "Love", value: "love" },
   ];
 
+  const typeFilters = [
+    { label: "All Types", value: "all" },
+    { label: "Movies", value: "movie" },
+    { label: "TV Shows", value: "tv" },
+    { label: "Anime", value: "anime" },
+  ];
+
   return (
     <div className="flex min-h-screen">
       <div className="flex-1 flex flex-col">
@@ -58,18 +69,33 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
             </h1>
           </div>
           {/* Filter tabs */}
-          <div className="flex gap-3">
-            {filters.map((f) => (
-              <Link
-                key={f.value}
-                href={`/watch?filter=${f.value}`}
-                className={`inline-block py-1.5 px-4 border border-[#1A1A1A] text-[12px] font-sans font-semibold uppercase tracking-widest transition-colors ${
-                  filter === f.value ? "bg-traced-dark text-white" : "text-[#737373] hover:bg-black/5"
-                }`}
-              >
-                {f.label}
-              </Link>
-            ))}
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-3">
+              {filters.map((f) => (
+                <Link
+                  key={f.value}
+                  href={`/watch?filter=${f.value}&type=${type}`}
+                  className={`inline-block py-1.5 px-4 border border-[#1A1A1A] text-[12px] font-sans font-semibold uppercase tracking-widest transition-colors ${
+                    filter === f.value ? "bg-traced-dark text-white" : "text-[#737373] hover:bg-black/5"
+                  }`}
+                >
+                  {f.label}
+                </Link>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              {typeFilters.map((t) => (
+                <Link
+                  key={t.value}
+                  href={`/watch?filter=${filter}&type=${t.value}`}
+                  className={`inline-block py-1 px-3 border border-transparent text-[11px] font-sans uppercase tracking-widest transition-colors ${
+                    type === t.value ? "border-b-traced-accent text-traced-dark font-bold" : "text-[#A3A3A3] hover:text-traced-dark"
+                  }`}
+                >
+                  {t.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
