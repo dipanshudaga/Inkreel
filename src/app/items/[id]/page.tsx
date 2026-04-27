@@ -117,54 +117,57 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
       {/* 2. Main Layout Container */}
       <main className="flex-1 px-16 pb-32">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           
-          {/* 3. Title Section - Editorial Style */}
+          {/* 3. Mandatory Action Bar at the Top */}
+          <div className="mb-12 py-8 border-y border-[#1A1A1A] bg-white/30">
+            <div className="max-w-xl">
+              <ActionBar
+                initialStatus={item.status}
+                initialRating={item.rating}
+                mediaId={item.id}
+                isExternal={isExternal}
+              />
+            </div>
+          </div>
+
+          {/* 4. Title Section */}
           <header className="mb-20">
-            <h1 className="text-8xl md:text-9xl font-serif font-medium tracking-tight leading-[0.9] max-w-5xl mb-8">
+            <h1 className="text-7xl md:text-8xl font-serif font-medium tracking-tight leading-[1.0] max-w-5xl mb-12">
               {item.title}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+            <div className="flex flex-wrap items-end gap-12 border-t border-[#1A1A1A] pt-8">
               {displayCreator && (
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray mb-1">Director/Author</span>
-                  <span className="text-xl font-medium tracking-tight">{item.creator}</span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Director/Author</span>
+                  <span className="text-lg font-medium tracking-tight leading-none">{item.creator}</span>
                 </div>
               )}
               
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray mb-1">Release</span>
-                <span className="text-xl font-medium tracking-tight italic text-[#737373]">{item.releaseYear || item.year || "N/A"}</span>
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Release</span>
+                <span className="text-lg font-medium tracking-tight leading-none italic text-[#737373]">{item.releaseYear || item.year || "N/A"}</span>
               </div>
 
-              <div className="flex flex-col min-w-[200px]">
-                <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray mb-1">Genres</span>
-                <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col gap-2 min-w-[200px]">
+                <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Genres</span>
+                <div className="flex flex-wrap gap-1.5">
                   {genresArray.filter((g: string) => g).map((genre: string) => (
-                    <span key={genre} className="text-xs font-medium bg-black/5 px-2 py-0.5 uppercase tracking-tighter">
+                    <span key={genre} className="text-[10px] font-bold border border-[#1A1A1A] px-2 py-0.5 uppercase tracking-tight bg-white">
                       {genre}
                     </span>
                   ))}
                 </div>
               </div>
-
-              {item.runtime && (
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray mb-1">Length</span>
-                  <span className="text-xl font-medium tracking-tight">
-                    {item.runtime} <span className="text-sm font-normal text-traced-gray">{item.category === 'read' ? 'PAGES' : 'MIN'}</span>
-                  </span>
-                </div>
-              )}
             </div>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-20">
-            {/* 4. Left Column: Poster & Actions */}
-            <aside className="flex flex-col gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-20">
+            {/* 5. Left Column: Poster */}
+            <aside>
               <div className="sticky top-12">
-                <div className="w-full aspect-[2/3] border border-[#1A1A1A] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.2)] bg-traced-surface relative group overflow-hidden">
+                <div className="w-full aspect-[2/3] border border-[#1A1A1A] shadow-[0_30px_60px_-12px_rgba(0,0,0,0.15)] bg-traced-surface relative group overflow-hidden">
                   {item.posterUrl ? (
                     <img 
                       src={item.posterUrl} 
@@ -174,57 +177,47 @@ export default async function ItemPage({ params }: ItemPageProps) {
                   ) : (
                     <div className="size-full flex items-center justify-center text-traced-gray uppercase tracking-widest text-[10px]">No Poster</div>
                   )}
-                  {/* Glass highlight effect */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-transparent pointer-events-none" />
-                </div>
-
-                <div className="mt-12 p-8 border border-[#1A1A1A] bg-white">
-                  <ActionBar
-                    initialStatus={item.status}
-                    initialRating={item.rating}
-                    mediaId={item.id}
-                    isExternal={isExternal}
-                  />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none" />
                 </div>
               </div>
             </aside>
 
-            {/* 5. Right Column: Detailed Narrative */}
+            {/* 6. Right Column: Content */}
             <article className="flex flex-col gap-24">
               {/* Synopsis Section */}
-              <section className="flex flex-col gap-10">
+              <section className="flex flex-col gap-8">
                 <div className="flex items-center gap-4">
-                  <div className="h-px bg-[#1A1A1A] w-12" />
-                  <h2 className="text-[10px] uppercase tracking-[0.3em] font-black text-traced-gray">The Narrative</h2>
+                  <div className="h-px bg-[#1A1A1A] w-8" />
+                  <h2 className="text-[10px] uppercase tracking-[0.3em] font-black text-traced-gray">Synopsis</h2>
                 </div>
-                <div className="prose prose-2xl max-w-none">
-                  <p className="text-3xl md:text-4xl font-serif leading-[1.4] text-traced-dark/90 text-justify hyphens-auto">
-                    {item.description || "In the vast expanse of the archive, this particular narrative remains partially veiled. Detailed metadata is currently being retrieved from the celestial servers."}
+                <div className="max-w-2xl">
+                  <p className="text-lg md:text-xl font-sans leading-relaxed text-traced-dark/80 text-justify">
+                    {item.description || "In the vast expanse of the archive, this particular narrative remains partially veiled."}
                   </p>
                 </div>
               </section>
 
-              {/* Logs Section (If local) */}
+              {/* Logs Section */}
               {item.logs && item.logs.length > 0 && (
-                <section className="flex flex-col gap-10">
+                <section className="flex flex-col gap-8">
                   <div className="flex items-center gap-4">
-                    <div className="h-px bg-[#1A1A1A] w-12" />
-                    <h2 className="text-[10px] uppercase tracking-[0.3em] font-black text-traced-gray">Your History</h2>
+                    <div className="h-px bg-[#1A1A1A] w-8" />
+                    <h2 className="text-[10px] uppercase tracking-[0.3em] font-black text-traced-gray">Log History</h2>
                   </div>
                   <div className="flex flex-col divide-y divide-[#E5E5E5] border-t border-b border-[#E5E5E5]">
                     {item.logs.map((log: any) => (
-                      <div key={log.id} className="grid grid-cols-[1fr_auto] py-6 gap-8 items-start">
-                        <div className="flex flex-col gap-2">
-                          <span className="text-lg font-serif italic text-traced-dark">
-                            {log.notes || (log.action === 'watched' ? "Witnessed the vision." : log.action === 'read' ? "Absorbed the ink." : "Logged in the archive.")}
+                      <div key={log.id} className="grid grid-cols-[1fr_auto] py-5 gap-8 items-start">
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-base font-serif italic text-traced-dark">
+                            {log.notes || "Logged in the archive."}
                           </span>
-                          <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">
+                          <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-traced-gray">
                             {format(new Date(log.date), "MMMM d, yyyy")}
                           </span>
                         </div>
                         {log.rating && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-widest">
-                            <Star size={10} fill="white" />
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black text-white text-[9px] font-bold uppercase tracking-widest">
+                            <Star size={9} fill="white" />
                             {log.rating.toFixed(1)}
                           </div>
                         )}
@@ -234,23 +227,19 @@ export default async function ItemPage({ params }: ItemPageProps) {
                 </section>
               )}
 
-              {/* Technical Details */}
-              <section className="grid grid-cols-2 md:grid-cols-4 gap-12 py-12 border-t border-[#1A1A1A]">
+              {/* Technical Footnote */}
+              <section className="flex flex-wrap gap-x-12 gap-y-6 pt-12 border-t border-[#1A1A1A] opacity-40">
                 <div className="flex flex-col gap-1">
-                   <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">ID</span>
-                   <span className="text-[10px] font-mono break-all opacity-40">{item.id}</span>
+                   <span className="text-[8px] uppercase tracking-widest font-bold">Entry ID</span>
+                   <span className="text-[9px] font-mono break-all">{item.id}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                   <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Source</span>
-                   <span className="text-[10px] font-mono uppercase opacity-40">{item.externalId?.split('-')[0] || 'Local'}</span>
+                   <span className="text-[8px] uppercase tracking-widest font-bold">Source</span>
+                   <span className="text-[9px] font-mono uppercase">{item.externalId?.split('-')[0] || 'Local'}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                   <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Status</span>
-                   <span className="text-[10px] font-mono uppercase opacity-40">{item.status || 'Unlogged'}</span>
-                </div>
-                <div className="flex flex-col gap-1">
-                   <span className="text-[10px] uppercase tracking-widest font-bold text-traced-gray">Category</span>
-                   <span className="text-[10px] font-mono uppercase opacity-40">{item.category}</span>
+                   <span className="text-[8px] uppercase tracking-widest font-bold">Category</span>
+                   <span className="text-[9px] font-mono uppercase">{item.category}</span>
                 </div>
               </section>
             </article>
