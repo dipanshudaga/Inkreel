@@ -209,6 +209,5 @@ export function LogModal() {
         </div>
       </div>
     </div>
->
   );
 }

@@ -123,5 +123,3 @@ export default async function UnifiedDetailPage({ params, category }: {
     </div>
   );
 }
-  );
-}
