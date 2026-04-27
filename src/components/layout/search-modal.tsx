@@ -133,11 +133,15 @@ export function SearchModal() {
                             {item.title}
                           </div>
                           <div className="uppercase tracking-[0.05em] mt-1 text-[#737373] font-sans text-xs">
-                            {item.year} • {item.completedAt ? `Watched ${format(new Date(item.completedAt), "MMM d, yyyy")}` : item.status === 'reading' ? 'Currently Reading' : 'In Archive'}
+                            {item.year} • {
+                              item.status 
+                                ? (item.completedAt ? `Logged ${format(new Date(item.completedAt), "MMM d, yyyy")}` : 'In Archive')
+                                : 'Global Database'
+                            }
                           </div>
                         </div>
                         <div className="text-traced-dark font-sans font-medium text-sm">
-                          {item.rating ? "★".repeat(Math.floor(item.rating)) + (item.rating % 1 !== 0 ? "½" : "") : item.progress || ""}
+                          {item.rating ? (typeof item.rating === 'number' ? "★".repeat(Math.floor(item.rating)) + (item.rating % 1 !== 0 ? "½" : "") : item.rating) : ""}
                         </div>
                       </div>
                     ))}

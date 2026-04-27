@@ -2,6 +2,7 @@ import { Newsreader, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SearchModal } from "@/components/layout/search-modal";
+import { Agentation } from "agentation";
 
 const newsreader = Newsreader({
   subsets: ["latin"],
@@ -42,6 +43,7 @@ export default function RootLayout({
         <SearchModal />
         <QuickLogModal />
         <LogModal />
+        <Agentation />
       </body>
     </html>
   );

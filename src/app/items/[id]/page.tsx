@@ -15,10 +15,20 @@ interface ItemPageProps {
 }
 
 import { LogButton } from "@/components/item/log-button";
+import { AddToArchiveButton } from "@/components/item/add-to-archive-button";
+
+import { getMovieById, getTVById } from "@/lib/api/tmdb";
+import { getBookById } from "@/lib/api/google-books";
+import { getAnimeById, getMangaById } from "@/lib/api/anilist";
 
 export default async function ItemPage({ params }: ItemPageProps) {
   const { id } = await params;
-  const item = await db.query.media.findFirst({
+  
+  let item: any = null;
+  let isExternal = false;
+
+  // 1. Try fetching from local DB first
+  item = await db.query.media.findFirst({
     where: eq(media.id, id),
     with: {
       logs: {
@@ -26,6 +36,26 @@ export default async function ItemPage({ params }: ItemPageProps) {
       },
     },
   });
+
+  // 2. If not found and looks like an external ID, fetch from API
+  if (!item) {
+    if (id.startsWith("tmdb-movie-")) {
+      item = await getMovieById(id.replace("tmdb-movie-", ""));
+      isExternal = true;
+    } else if (id.startsWith("tmdb-tv-")) {
+      item = await getTVById(id.replace("tmdb-tv-", ""));
+      isExternal = true;
+    } else if (id.startsWith("google-")) {
+      item = await getBookById(id.replace("google-", ""));
+      isExternal = true;
+    } else if (id.startsWith("ani-anime-")) {
+      item = await getAnimeById(id.replace("ani-anime-", ""));
+      isExternal = true;
+    } else if (id.startsWith("ani-manga-")) {
+      item = await getMangaById(id.replace("ani-manga-", ""));
+      isExternal = true;
+    }
+  }
 
   if (!item) {
     notFound();
@@ -100,49 +130,61 @@ export default async function ItemPage({ params }: ItemPageProps) {
                   Your Log
                 </h3>
 
-                {latestLog ? (
-                  <div className="flex flex-col gap-8">
-                    <div className="flex items-center bg-[#EFEEE8] border-hairline p-6 divide-x divide-[#D4D4D4]">
-                      <div className="flex flex-col gap-2 pr-12">
-                        <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Rating</span>
-                        <div className="flex gap-1 text-traced-accent">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              size={16} 
-                              fill={i < Math.floor(item.rating || 0) ? "currentColor" : "none"} 
-                              strokeWidth={2}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2 px-12">
-                        <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Date Logged</span>
-                        <span className="text-traced-dark font-sans font-medium text-[15px]">
-                          {format(new Date(latestLog.date), "MMM d, yyyy")}
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-2 pl-12">
-                        <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Tags</span>
-                        <div className="flex gap-2">
-                           <span className="px-2 py-0.5 border-hairline text-traced-dark font-sans text-[11px] bg-white">Sci-Fi</span>
-                           <span className="px-2 py-0.5 border-hairline text-traced-dark font-sans text-[11px] bg-white">Epic</span>
-                        </div>
-                      </div>
-                    </div>
+                 {isExternal ? (
+                   <div className="flex flex-col items-center justify-center py-20 border-hairline border-dashed bg-white/50 gap-6">
+                     <div className="flex flex-col items-center gap-2">
+                       <span className="text-[#737373] font-sans text-sm uppercase tracking-widest">Global Discovery</span>
+                       <p className="text-[#A1A19A] font-serif italic text-base">This item is not in your archive yet.</p>
+                     </div>
+                     <AddToArchiveButton item={item} />
+                   </div>
+                 ) : (
+                   <>
+                     {latestLog ? (
+                       <div className="flex flex-col gap-8">
+                         <div className="flex items-center bg-[#EFEEE8] border-hairline p-6 divide-x divide-[#D4D4D4]">
+                           <div className="flex flex-col gap-2 pr-12">
+                             <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Rating</span>
+                             <div className="flex gap-1 text-traced-accent">
+                               {[...Array(5)].map((_, i) => (
+                                 <Star 
+                                   key={i} 
+                                   size={16} 
+                                   fill={i < Math.floor(item.rating || 0) ? "currentColor" : "none"} 
+                                   strokeWidth={2}
+                                 />
+                               ))}
+                             </div>
+                           </div>
+                           <div className="flex flex-col gap-2 px-12">
+                             <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Date Logged</span>
+                             <span className="text-traced-dark font-sans font-medium text-[15px]">
+                               {format(new Date(latestLog.date), "MMM d, yyyy")}
+                             </span>
+                           </div>
+                           <div className="flex flex-col gap-2 pl-12">
+                             <span className="uppercase tracking-[0.05em] text-[#737373] font-sans text-[11px] font-medium">Tags</span>
+                             <div className="flex gap-2">
+                                <span className="px-2 py-0.5 border-hairline text-traced-dark font-sans text-[11px] bg-white">Sci-Fi</span>
+                                <span className="px-2 py-0.5 border-hairline text-traced-dark font-sans text-[11px] bg-white">Epic</span>
+                             </div>
+                           </div>
+                         </div>
 
-                    <div className="bg-white border-hairline p-10">
-                       <p className="text-traced-dark font-serif text-2xl italic leading-relaxed">
-                         {latestLog.notes || "No notes for this entry."}
-                       </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-20 border-hairline border-dashed bg-white/50 gap-4">
-                    <span className="text-[#737373] font-sans text-sm uppercase tracking-widest">No logs found</span>
-                    <LogButton mediaId={item.id} type={item.type} />
-                  </div>
-                )}
+                         <div className="bg-white border-hairline p-10">
+                            <p className="text-traced-dark font-serif text-2xl italic leading-relaxed">
+                              {latestLog.notes || "No notes for this entry."}
+                            </p>
+                         </div>
+                       </div>
+                     ) : (
+                       <div className="flex flex-col items-center justify-center py-20 border-hairline border-dashed bg-white/50 gap-4">
+                         <span className="text-[#737373] font-sans text-sm uppercase tracking-widest">No logs found</span>
+                         <LogButton mediaId={item.id} type={item.type} />
+                       </div>
+                     )}
+                   </>
+                 )}
              </div>
           </div>
         </div>
