@@ -3,25 +3,30 @@ import postgres from "postgres";
 import * as schema from "./schema";
 import dns from "dns";
 
-// Force IPv4 resolution to prevent ENOTFOUND errors on Vercel/Supavisor
+// 1. Force IPv4 priority immediately
 if (typeof dns.setDefaultResultOrder === "function") {
   dns.setDefaultResultOrder("ipv4first");
 }
 
 const connectionString = process.env.DATABASE_URL;
 
-if (!connectionString) {
-  console.error("❌ DATABASE_URL is missing in this environment!");
-} else {
-  // Log a masked version for debugging in Vercel
-  const masked = connectionString.replace(/:([^:@]+)@/, ":****@");
-  console.log("🔗 Database connection initialized:", masked.split('@')[1]);
+// 2. Priming the DNS cache (helps ENOTFOUND on some serverless nodes)
+if (connectionString) {
+  try {
+    const url = new URL(connectionString);
+    dns.lookup(url.hostname, (err, address) => {
+      if (err) console.error("🔍 DNS Lookup failed for:", url.hostname, err);
+      else console.log("🔍 DNS resolved:", url.hostname, "->", address);
+    });
+  } catch (e) {
+    // Ignore invalid URLs here, will be caught later
+  }
 }
 
-// Disable prefetch as it is not supported for "Transaction" mode in Supabase
 const client = postgres(connectionString || "", { 
   prepare: false,
   connect_timeout: 10,
+  max_lifetime: 60 * 30, // 30 minutes
 });
 
 export const db = drizzle(client, { schema });
