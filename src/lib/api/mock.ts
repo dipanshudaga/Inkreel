@@ -5,7 +5,7 @@ import { getBGGDetails, searchBGG, getTrendingGames, MOCK_GAMES } from "./bgg";
 export interface MediaItem {
   id: string;
   category: "watch" | "read" | "play";
-  subType: string;
+  type: string;
   title: string;
   slug: string;
   posterUrl: string;
@@ -84,7 +84,7 @@ export async function getMediaBySlug(slugOrId: string, category?: string): Promi
   if (slugOrId.startsWith("bgg-")) {
     const id = slugOrId.replace("bgg-", "");
     const details = await getBGGDetails([id]);
-    return details[0] ? { ...details[0], category: "play", subType: "board_game" } as any : null;
+    return details[0] ? { ...details[0], category: "play", type: "board_game" } as any : null;
   }
 
   // 2. Check Local DB for Slug or Exact Title

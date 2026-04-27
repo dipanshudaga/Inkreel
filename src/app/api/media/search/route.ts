@@ -27,8 +27,8 @@ export async function GET(req: NextRequest) {
   const externalToLocal = new Map(localResults.map(r => [r.externalId, r.id]));
   
   const uniqueGlobal = (globalResults || []).map(g => {
-    // Standardize 'subType' to 'type' for the frontend
-    const normalized = { ...g, type: g.type || g.subType };
+    // Standardize 'type' for the frontend
+    const normalized = { ...g };
 
     // If we already have this in our DB, use the local UUID instead of the external string
     if (externalToLocal.has(g.id)) {

@@ -11,7 +11,7 @@ export async function logMediaAction(formData: {
   mediaData: {
     title: string;
     category: "watch" | "read" | "play";
-    subType: string;
+    type: string;
     posterUrl: string;
     backdropUrl?: string;
     year: number;
@@ -48,7 +48,7 @@ export async function logMediaAction(formData: {
     } else {
       const [newMedia] = await db.insert(media).values({
         title: formData.mediaData.title,
-        type: formData.mediaData.subType,
+        type: formData.mediaData.type,
         category: formData.mediaData.category,
         posterUrl: formData.mediaData.posterUrl,
         backdropUrl: formData.mediaData.backdropUrl,

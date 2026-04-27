@@ -12,7 +12,7 @@ interface MediaCardProps {
   rating: number; // Keeping this for compatibility although not shown in the exact poster grid mockup
   slug: string;
   year: number;
-  subType?: string;
+  type?: string;
   description?: string; // Additional prop for compatibility
   subtitle?: string; // New prop specifically for what to show below title (e.g. "2024 · Movie" or "2019 · 1-5 players" or author)
   className?: string;
@@ -25,30 +25,30 @@ export function MediaCard({
   posterUrl,
   slug,
   year,
-  subType,
+  type,
   subtitle,
   className,
   href,
 }: MediaCardProps) {
   const [imageError, setImageError] = useState(false);
   const targetHref = href || `/${category}/${slug}`;
-
+ 
   // Use aspect-square for games
   const isSquare = category === "play";
   const aspectClass = isSquare ? "aspect-[1/1]" : "aspect-[2/3]";
-
+ 
   // Fallback styling if image fails
   const fallbackBgClass = 
     category === "watch" ? "bg-[#EDE6D8]" : 
     category === "read" ? "bg-[#EBE4D6]" : "bg-[#D5DDE5]";
-
-  // Format subType (e.g. "board_game" -> "Board Game")
-  const formattedSubType = subType 
-    ? subType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+ 
+  // Format type (e.g. "board_game" -> "Board Game")
+  const formattedType = type 
+    ? type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
     : category.charAt(0).toUpperCase() + category.slice(1);
 
   // Fallback subtitle string
-  const displaySubtitle = subtitle || `${year} · ${formattedSubType}`;
+  const displaySubtitle = subtitle || `${year} · ${formattedType}`;
 
   return (
     <Link 

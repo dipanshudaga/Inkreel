@@ -93,8 +93,8 @@ export function SearchOverlay({
           )}
 
           {results.map((item) => {
-            const formattedSubType = item.subType 
-              ? item.subType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+            const formattedType = item.type 
+              ? item.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
               : item.category.charAt(0).toUpperCase() + item.category.slice(1);
 
             return (
@@ -116,7 +116,7 @@ export function SearchOverlay({
                     {item.title}
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-sans font-bold text-[#737373] uppercase tracking-wider">{formattedSubType}</span>
+                    <span className="text-[11px] font-sans font-bold text-[#737373] uppercase tracking-wider">{formattedType}</span>
                     <span className="text-[#D4D4D4] text-xs">•</span>
                     <span className="text-[11px] font-sans text-[#A3A3A3] uppercase tracking-wider">{item.year || "Unknown"}</span>
                   </div>

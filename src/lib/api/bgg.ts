@@ -62,7 +62,7 @@ export async function searchBGG(query: string) {
     return details.map((detail: any) => ({
       id: `bgg-${detail.id}`,
       category: "play",
-      subType: "board_game",
+      type: "board_game",
       title: detail.title,
       slug: detail.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       posterUrl: detail.posterUrl,
@@ -85,7 +85,7 @@ export const MOCK_GAMES = [
   {
     id: "bgg-224517",
     category: "play" as const,
-    subType: "board_game",
+    type: "board_game",
     title: "Brass: Birmingham",
     slug: "brass-birmingham",
     posterUrl: "https://cf.geekdo-images.com/x3zx6qkHpoP0mG9pZ669mg__imagepage/img/9SIn_H_f5is8S63V9P8D7N9I77c=/fit-in/900x600/filters:no_upscale():strip_icc()/pic3490653.jpg",
@@ -101,7 +101,7 @@ export const MOCK_GAMES = [
   {
     id: "bgg-167791",
     category: "play" as const,
-    subType: "board_game",
+    type: "board_game",
     title: "Terraforming Mars",
     slug: "terraforming-mars",
     posterUrl: "https://cf.geekdo-images.com/wg9oOLcsKvDesSUdhtJZvQ__imagepage/img/8u-v3Y96m1m1Y6u1fS6Y6Q1oX-I=/fit-in/900x600/filters:no_upscale():strip_icc()/pic3536616.jpg",
@@ -117,7 +117,7 @@ export const MOCK_GAMES = [
   {
     id: "bgg-291457",
     category: "play" as const,
-    subType: "board_game",
+    type: "board_game",
     title: "Gloomhaven: Jaws of the Lion",
     slug: "gloomhaven-jaws-of-the-lion",
     posterUrl: "https://cf.geekdo-images.com/9SOf_mZ9pG9I1t-N9o0u9Q__imagepage/img/9SOf_mZ9pG9I1t-N9o0u9Q=/fit-in/900x600/filters:no_upscale():strip_icc()/pic5055631.jpg",
@@ -148,7 +148,7 @@ export async function getTrendingGames() {
     return results.slice(0, 20).map((item: any) => ({
       id: `bgg-${item["@_id"]}`,
       category: "play" as const,
-      subType: "board_game",
+      type: "board_game",
       title: item.name["@_value"],
       slug: item.name["@_value"].toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       posterUrl: item.thumbnail?.["@_value"] || "",

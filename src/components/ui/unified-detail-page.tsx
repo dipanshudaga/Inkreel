@@ -64,7 +64,7 @@ export default async function UnifiedDetailPage({ params, category }: {
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-4">
               <span className="uppercase tracking-[0.2em] text-traced-accent font-sans text-[11px] font-black">
-                {media.subType || media.category}
+                {media.type || media.category}
               </span>
               <div className="h-px w-8 bg-[#D4D4D4]" />
               <span className="uppercase tracking-[0.2em] text-[#737373] font-sans text-[11px]">

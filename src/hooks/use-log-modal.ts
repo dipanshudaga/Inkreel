@@ -8,7 +8,7 @@ interface LogModalStore {
     id: string;
     title: string;
     category: Category;
-    subType: string;
+    type: string;
     posterUrl: string;
     backdropUrl?: string;
     year?: number;

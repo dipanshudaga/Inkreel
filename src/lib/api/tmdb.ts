@@ -25,7 +25,7 @@ export const MOCK_MOVIES = [
   {
     id: "tmdb-movie-dune-2",
     category: "watch" as const,
-    subType: "movie",
+    type: "movie",
     title: "Dune: Part Two",
     slug: "movie-693134-dune-part-two",
     posterUrl: "https://image.tmdb.org/t/p/w500/1pdf6itp6p4qTZbVbbNVp4pCzg0.jpg",
@@ -40,7 +40,7 @@ export const MOCK_MOVIES = [
   {
     id: "tmdb-movie-inception",
     category: "watch" as const,
-    subType: "movie",
+    type: "movie",
     title: "Inception",
     slug: "movie-27205-inception",
     posterUrl: "https://image.tmdb.org/t/p/w500/o099vY7tZp79S30D9ST9p97Xp7l.jpg",
@@ -55,7 +55,7 @@ export const MOCK_MOVIES = [
   {
     id: "tmdb-movie-dark-knight",
     category: "watch" as const,
-    subType: "movie",
+    type: "movie",
     title: "The Dark Knight",
     slug: "movie-155-the-dark-knight",
     posterUrl: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDO92SMRvVc7O9R96S1.jpg",

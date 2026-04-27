@@ -129,7 +129,7 @@ export function FilteredMediaView({ initialItems, userItems, category }: Filtere
                         rating={mediaData.rating || item.rating}
                         slug={mediaData.slug}
                         year={mediaData.year}
-                        subType={mediaData.subType}
+                        type={mediaData.type}
                         description={mediaData.description}
                       />
                     );

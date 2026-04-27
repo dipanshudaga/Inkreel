@@ -29,7 +29,7 @@ export function LogModal() {
         mediaData: {
           title: initialMedia.title,
           category: initialMedia.category,
-          subType: initialMedia.subType || (initialMedia.category === "watch" ? "movie" : initialMedia.category === "read" ? "book" : "board_game"),
+          type: initialMedia.type || (initialMedia.category === "watch" ? "movie" : initialMedia.category === "read" ? "book" : "board_game"),
           posterUrl: initialMedia.posterUrl,
           backdropUrl: initialMedia.backdropUrl,
           year: initialMedia.year || 2024,
@@ -99,7 +99,7 @@ export function LogModal() {
                   </h3>
                   <div className="flex items-center gap-3">
                     <span className="text-[11px] font-sans font-bold text-traced-accent uppercase tracking-widest">
-                      {initialMedia.subType || initialMedia.category}
+                      {initialMedia.type || initialMedia.category}
                     </span>
                     <div className="h-px w-4 bg-[#D4D4D4]" />
                     <span className="text-[11px] font-sans text-[#737373] uppercase tracking-widest font-bold">

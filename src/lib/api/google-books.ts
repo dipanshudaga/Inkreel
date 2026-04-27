@@ -5,7 +5,7 @@ export const MOCK_BOOKS = [
   {
     id: "gb-dune-1",
     category: "read",
-    subType: "book",
+    type: "book",
     title: "Dune",
     slug: "dune",
     posterUrl: "https://books.google.com/books/content?id=B1hPr9uS9PMC&printsec=frontcover&img=1&zoom=1",
@@ -19,7 +19,7 @@ export const MOCK_BOOKS = [
   {
     id: "gb-project-hail-mary",
     category: "read",
-    subType: "book",
+    type: "book",
     title: "Project Hail Mary",
     slug: "project-hail-mary",
     posterUrl: "https://books.google.com/books/content?id=9_kREAAAQBAJ&printsec=frontcover&img=1&zoom=1",
@@ -33,7 +33,7 @@ export const MOCK_BOOKS = [
   {
     id: "gb-dark-matter",
     category: "read",
-    subType: "book",
+    type: "book",
     title: "Dark Matter",
     slug: "dark-matter",
     posterUrl: "https://books.google.com/books/content?id=XFp0CwAAQBAJ&printsec=frontcover&img=1&zoom=1",
@@ -47,7 +47,7 @@ export const MOCK_BOOKS = [
   {
     id: "gb-neuromancer",
     category: "read",
-    subType: "book",
+    type: "book",
     title: "Neuromancer",
     slug: "neuromancer",
     posterUrl: "https://books.google.com/books/content?id=OQy9AAAAQBAJ&printsec=frontcover&img=1&zoom=1",
@@ -94,12 +94,12 @@ export async function searchGoogleBooks(query: string, startIndex: number = 0) {
     return data.items.map((book: any) => {
       const info = book.volumeInfo || {};
       const isManga = info.categories?.some((c: string) => c.toLowerCase().includes("manga") || c.toLowerCase().includes("comics"));
-      const subType = isManga ? "manga" : "book";
+      const type = isManga ? "manga" : "book";
 
       return {
         id: `gb-${book.id}`,
         category: "read",
-        type: isManga ? "manga" : "book",
+        type,
         title: info.title,
         slug: info.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         posterUrl: info.imageLinks?.thumbnail?.replace("http:", "https:"),
