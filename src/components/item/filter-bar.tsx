@@ -86,7 +86,9 @@ function FilterGroup({ label, options, paramName, currentValue }: FilterGroupPro
 export function FilterBar({ 
   genres, 
   decades,
-  currentFilters 
+  currentFilters,
+  categoryOptions,
+  typeOptions
 }: { 
   genres: string[], 
   decades: string[],
@@ -96,21 +98,28 @@ export function FilterBar({
     genre: string;
     decade: string;
     sort: string;
-  }
+  },
+  categoryOptions?: FilterOption[],
+  typeOptions?: FilterOption[],
+  categoryLabel?: string,
+  typeLabel?: string
 }) {
-  const categories = [
+  const defaultCategories = [
     { label: "All", value: "all" },
     { label: "Watched", value: "watched" },
     { label: "Watchlist", value: "watchlist" },
     { label: "Love", value: "love" },
   ];
 
-  const types = [
+  const defaultTypes = [
     { label: "All Types", value: "all" },
     { label: "Movies", value: "movie" },
     { label: "TV Shows", value: "tv" },
     { label: "Anime", value: "anime" },
   ];
+
+  const categories = categoryOptions || defaultCategories;
+  const types = typeOptions || defaultTypes;
 
   const sortOptions = [
     { label: "When Logged (Newest)", value: "logged_desc" },
@@ -122,15 +131,15 @@ export function FilterBar({
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-3 py-4 border-b-hairline bg-traced-bg">
+    <div className="flex flex-wrap items-center gap-3 py-4 bg-traced-bg">
       <FilterGroup 
-        label="Category" 
+        label={categoryLabel || "Category"} 
         options={categories} 
         paramName="filter" 
         currentValue={currentFilters.filter} 
       />
       <FilterGroup 
-        label="Type" 
+        label={typeLabel || "Type"} 
         options={types} 
         paramName="type" 
         currentValue={currentFilters.type} 

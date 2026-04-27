@@ -3,8 +3,8 @@
 import { db } from "@/lib/db";
 import { media, logs } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { searchTMDB } from "@/lib/api/tmdb";
-import { searchGoogleBooks } from "@/lib/api/google-books";
+import { searchTMDB, getMovieById, getTVById } from "@/lib/api/tmdb";
+import { searchGoogleBooks, getBookById } from "@/lib/api/google-books";
 import { revalidatePath } from "next/cache";
 
 export async function importLetterboxdAction(data: any[]) {
@@ -36,10 +36,27 @@ export async function importLetterboxdAction(data: any[]) {
         }
 
         const searchResults = await searchTMDB(title);
-        const match = searchResults.find((r: any) => 
+        const searchMatch = searchResults.find((r: any) => 
           r.title.toLowerCase() === title.toLowerCase() && 
           (!year || r.year === year)
         ) || searchResults[0];
+
+        if (!searchMatch) {
+          skippedCount++;
+          return;
+        }
+
+        // Fetch full details to get Backdrop, Director, and Genres
+        let match: any = searchMatch;
+        try {
+          const rawId = searchMatch.id.replace("tmdb-movie-", "").replace("tmdb-tv-", "");
+          const fullDetail = searchMatch.type === "tv" || searchMatch.type === "anime" 
+            ? await getTVById(rawId) 
+            : await getMovieById(rawId);
+          if (fullDetail) match = fullDetail;
+        } catch (e) {
+          console.warn(`Failed to fetch full details for ${title}, using search result.`);
+        }
 
         const [newMedia] = await db.insert(media).values({
           externalId: match?.id || `lb-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
@@ -47,7 +64,11 @@ export async function importLetterboxdAction(data: any[]) {
           category: "watch",
           type: match?.type || "movie",
           posterUrl: match?.posterUrl || null,
+          backdropUrl: match?.backdropUrl || null,
           releaseYear: year || match?.year || null,
+          creator: match?.creator || "Movie",
+          genres: Array.isArray(match?.genres) ? match.genres.join(", ") : (match?.genres || ""),
+          runtime: match?.runtime || null,
           description: match?.description || "",
           status: "completed",
           rating: rating,
@@ -101,10 +122,25 @@ export async function importGoodreadsAction(data: any[]) {
         }
 
         const searchResults = await searchGoogleBooks(title);
-        const match = searchResults.find((r: any) => 
+        const searchMatch = searchResults.find((r: any) => 
           r.title.toLowerCase() === title.toLowerCase() && 
           (!author || r.creator.toLowerCase().includes(author.toLowerCase()))
         ) || searchResults[0];
+
+        if (!searchMatch) {
+          skippedCount++;
+          return;
+        }
+
+        // Fetch full details for backdrop and precise info
+        let match: any = searchMatch;
+        try {
+          const rawId = searchMatch.id.replace("gb-", "");
+          const fullDetail = await getBookById(rawId);
+          if (fullDetail) match = fullDetail;
+        } catch (e) {
+          console.warn(`Failed to fetch full details for book ${title}`);
+        }
 
         const [newMedia] = await db.insert(media).values({
           externalId: match?.id || `gr-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
@@ -112,7 +148,11 @@ export async function importGoodreadsAction(data: any[]) {
           category: "read",
           type: match?.type || "book",
           posterUrl: match?.posterUrl || null,
+          backdropUrl: match?.backdropUrl || null,
           releaseYear: match?.year || null,
+          creator: match?.creator || author || "Unknown Author",
+          genres: Array.isArray(match?.genres) ? match.genres.join(", ") : (match?.genres || ""),
+          runtime: match?.runtime || null,
           description: match?.description || "",
           status: dateRead ? "completed" : "plan_to_read",
           rating: rating,

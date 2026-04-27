@@ -140,40 +140,46 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
                   <span className="text-traced-accent font-serif italic text-xl font-medium">({items.length})</span>
                 </div>
                 {/* Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 gap-y-12 p-10 bg-white">
-                  {items.map((item) => (
-                    <Link key={item.id} href={`/items/${item.id}`} className="flex flex-col gap-4 group">
-                      <div className="aspect-[2/3] overflow-hidden bg-traced-surface border-hairline relative">
-                        {item.posterUrl ? (
-                          <div
-                            className="bg-cover bg-center transition-all duration-700 size-full group-hover:scale-105"
-                            style={{ backgroundImage: `url(${item.posterUrl})` }}
-                          />
-                        ) : (
-                          <div className="size-full flex items-center justify-center text-traced-gray text-[10px] uppercase tracking-widest font-bold">
-                            No Poster
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
-                      </div>
-                      <div className="flex flex-col gap-1.5 text-left">
-                        <div className="text-[17px] leading-tight text-traced-dark font-serif font-medium line-clamp-2 group-hover:text-traced-accent transition-colors duration-300">
-                          {item.title}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="uppercase tracking-[0.1em] text-[#A3A3A3] font-sans text-[10px] font-bold">
-                            {item.releaseYear || item.year || ""}
-                          </span>
-                          {item.rating && (
-                            <>
-                              <span className="text-[#D4D4D4]">•</span>
-                              <span className="text-traced-accent font-sans text-[10px] font-bold">★ {item.rating}</span>
-                            </>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 gap-y-16 p-10 bg-white">
+                  {items.map((item) => {
+                    const genres = item.genres?.toLowerCase() || "";
+                    let subcategory = item.type === "tv" ? "TV SHOW" : item.type === "movie" ? "MOVIE" : item.type.toUpperCase();
+                    if (genres.includes("documentary")) subcategory = "DOCUMENTARY";
+                    if (item.type === "anime") subcategory = "ANIME";
+
+                    return (
+                      <Link key={item.id} href={`/items/${item.id}`} className="flex flex-col gap-6 group">
+                        <div className="aspect-[2/3] overflow-hidden bg-traced-surface border-hairline relative transition-all duration-700">
+                          {item.posterUrl ? (
+                            <img
+                              src={item.posterUrl}
+                              className="size-full object-cover transition-all duration-1000 group-hover:scale-105"
+                              alt={item.title}
+                            />
+                          ) : (
+                            <div className="size-full flex items-center justify-center text-traced-gray text-[10px] uppercase tracking-widest font-bold">
+                              No Poster
+                            </div>
                           )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                        <div className="flex flex-col gap-2">
+                          <div className="text-traced-dark font-serif font-medium text-2xl leading-tight line-clamp-2 group-hover:text-traced-accent transition-colors duration-300">
+                            {item.title}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="uppercase tracking-[0.1em] text-[#737373] font-sans text-[11px] font-bold">
+                              {subcategory}
+                            </span>
+                            <span className="text-[#D4D4D4]">•</span>
+                            <span className="uppercase tracking-[0.1em] text-[#A3A3A3] font-sans text-[11px]">
+                              {item.releaseYear || item.year || ""}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             );

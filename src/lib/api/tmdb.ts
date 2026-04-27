@@ -152,8 +152,9 @@ export async function searchTMDB(query: string) {
         title: m.title,
         slug: m.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
+        backdropUrl: m.backdrop_path ? `https://image.tmdb.org/t/p/original${m.backdrop_path}` : null,
         year: m.release_date ? new Date(m.release_date).getFullYear() : null,
-        creator: "Unknown",
+        creator: "Movie", // Default for search
         description: m.overview,
         genres,
       };
@@ -170,6 +171,7 @@ export async function searchTMDB(query: string) {
         title: m.name,
         slug: m.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
+        backdropUrl: m.backdrop_path ? `https://image.tmdb.org/t/p/original${m.backdrop_path}` : null,
         year: m.first_air_date ? new Date(m.first_air_date).getFullYear() : null,
         creator: "TV Series",
         description: m.overview,
