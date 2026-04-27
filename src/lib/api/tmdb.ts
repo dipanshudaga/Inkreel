@@ -156,7 +156,6 @@ export async function searchTMDB(query: string) {
         creator: "Unknown",
         description: m.overview,
         genres,
-        rating: m.vote_average / 2,
       };
     });
 
@@ -174,12 +173,11 @@ export async function searchTMDB(query: string) {
         year: m.first_air_date ? new Date(m.first_air_date).getFullYear() : null,
         creator: "TV Series",
         description: m.overview,
-        genres,
-        rating: m.vote_average / 2,
+        genres: mapGenres(m.genre_ids),
       };
     });
 
-    return [...movies, ...tvs].sort((a, b) => b.rating - a.rating);
+    return [...movies, ...tvs];
   } catch (error) {
     console.error("TMDB Multi Search Error:", error);
     return [];
@@ -210,7 +208,6 @@ export async function getTrendingWatch(page: number = 1) {
         posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
         year: m.release_date ? new Date(m.release_date).getFullYear() : null,
         genres,
-        rating: m.vote_average / 2,
       };
     });
 
@@ -227,11 +224,10 @@ export async function getTrendingWatch(page: number = 1) {
         posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : null,
         year: m.first_air_date ? new Date(m.first_air_date).getFullYear() : null,
         genres,
-        rating: m.vote_average / 2,
       };
     });
 
-    return [...movies, ...tvs].sort((a, b) => b.rating - a.rating);
+    return [...movies, ...tvs];
   } catch (error) {
     console.error("TMDB Trending Error:", error);
     return MOCK_MOVIES;
@@ -240,10 +236,13 @@ export async function getTrendingWatch(page: number = 1) {
 
 export async function getMovieById(id: string) {
   try {
-    const movie = await safeTMDBFetch(`${TMDB_BASE_URL}/movie/${id}`);
+    const movie = await safeTMDBFetch(`${TMDB_BASE_URL}/movie/${id}?append_to_response=credits`);
     if (!movie || !movie.id) return null;
     const genres = movie.genres?.map((g: any) => g.name) || [];
     const isAnimated = genres.includes("Animation");
+
+    // Find director
+    const director = movie.credits?.crew?.find((c: any) => c.job === "Director")?.name || "Unknown Director";
 
     return {
       id: `tmdb-movie-${movie.id}`,
@@ -251,13 +250,13 @@ export async function getMovieById(id: string) {
       type: (isAnimated && movie.original_language === "ja") ? "anime" : "movie",
       title: movie.title,
       slug: movie.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+      posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w780${movie.poster_path}` : null,
       backdropUrl: movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null,
+      releaseYear: movie.release_date ? new Date(movie.release_date).getFullYear() : null,
       year: movie.release_date ? new Date(movie.release_date).getFullYear() : null,
-      creator: movie.production_companies?.[0]?.name || "Unknown",
+      creator: director,
       description: movie.overview,
       genres,
-      rating: movie.vote_average / 2,
       runtime: movie.runtime,
     };
   } catch (error) {
@@ -267,10 +266,13 @@ export async function getMovieById(id: string) {
 
 export async function getTVById(id: string) {
   try {
-    const tv = await safeTMDBFetch(`${TMDB_BASE_URL}/tv/${id}`);
+    const tv = await safeTMDBFetch(`${TMDB_BASE_URL}/tv/${id}?append_to_response=credits`);
     if (!tv || !tv.id) return null;
     const genres = tv.genres?.map((g: any) => g.name) || [];
     const isAnimated = genres.includes("Animation");
+
+    // For TV, creators are often listed in created_by
+    const creator = tv.created_by?.[0]?.name || tv.credits?.crew?.find((c: any) => c.job === "Executive Producer")?.name || "TV Series";
 
     return {
       id: `tmdb-tv-${tv.id}`,
@@ -278,14 +280,16 @@ export async function getTVById(id: string) {
       type: (isAnimated && tv.original_language === "ja") ? "anime" : "tv",
       title: tv.name,
       slug: tv.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      posterUrl: tv.poster_path ? `https://image.tmdb.org/t/p/w500${tv.poster_path}` : null,
+      posterUrl: tv.poster_path ? `https://image.tmdb.org/t/p/w780${tv.poster_path}` : null,
       backdropUrl: tv.backdrop_path ? `https://image.tmdb.org/t/p/original${tv.backdrop_path}` : null,
+      releaseYear: tv.first_air_date ? new Date(tv.first_air_date).getFullYear() : null,
       year: tv.first_air_date ? new Date(tv.first_air_date).getFullYear() : null,
-      creator: tv.created_by?.[0]?.name || "TV Series",
+      creator: creator,
       description: tv.overview,
       genres,
-      rating: tv.vote_average / 2,
       runtime: tv.episode_run_time?.[0],
+      seasons: tv.number_of_seasons,
+      episodes: tv.number_of_episodes,
     };
   } catch (error) {
     return null;

@@ -44,18 +44,6 @@ export default async function UnifiedDetailPage({ params, category }: {
           
           <div className="mt-12 flex flex-col gap-8">
             <DetailLogButton media={media} />
-            
-            <div className="flex flex-col gap-2">
-              <span className="uppercase tracking-[0.15em] text-[#737373] font-sans text-[11px] font-bold">
-                Archive Rating
-              </span>
-              <div className="flex items-center gap-3">
-                <StarRating value={media.rating} size="md" />
-                <span className="text-traced-dark font-serif font-medium text-xl">
-                  {media.rating ? media.rating.toFixed(1) : "N/A"}
-                </span>
-              </div>
-            </div>
           </div>
         </div>
 

@@ -34,7 +34,7 @@ export function ActionBar({ initialStatus, initialRating, isExternal }: ActionBa
         onClick={() => toggle("watched")}
         className="flex flex-col items-center gap-3 group cursor-pointer"
       >
-        <div className={`size-14 rounded-full border-hairline flex items-center justify-center transition-all duration-200 ${
+        <div className={`size-14 border-hairline flex items-center justify-center transition-all duration-200 ${
           active === "watched"
             ? "bg-traced-dark border-traced-dark text-white scale-110"
             : "bg-white hover:border-traced-dark text-[#737373]"
@@ -49,7 +49,7 @@ export function ActionBar({ initialStatus, initialRating, isExternal }: ActionBa
         onClick={() => toggle("watchlist")}
         className="flex flex-col items-center gap-3 group cursor-pointer"
       >
-        <div className={`size-14 rounded-full border-hairline flex items-center justify-center transition-all duration-200 ${
+        <div className={`size-14 border-hairline flex items-center justify-center transition-all duration-200 ${
           active === "watchlist"
             ? "bg-traced-dark border-traced-dark text-white scale-110"
             : "bg-white hover:border-traced-dark text-[#737373]"
@@ -64,10 +64,10 @@ export function ActionBar({ initialStatus, initialRating, isExternal }: ActionBa
         onClick={() => toggle("love")}
         className="flex flex-col items-center gap-3 group cursor-pointer"
       >
-        <div className={`size-14 rounded-full border-hairline flex items-center justify-center transition-all duration-200 ${
+        <div className={`size-14 border-hairline flex items-center justify-center transition-all duration-200 ${
           active === "love"
-            ? "bg-[#EF4444] border-[#EF4444] text-white scale-110"
-            : "bg-white hover:border-[#EF4444] text-[#737373]"
+            ? "bg-traced-accent border-traced-accent text-white scale-110"
+            : "bg-white hover:border-traced-accent text-[#737373]"
         }`}>
           <Heart size={22} strokeWidth={2} fill={active === "love" ? "currentColor" : "none"} />
         </div>

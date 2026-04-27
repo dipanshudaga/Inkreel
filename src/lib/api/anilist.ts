@@ -73,7 +73,6 @@ export async function searchAniList(query: string, type: "ANIME" | "MANGA") {
     creator: "Various", 
     description: m.description?.replace(/<[^>]*>?/gm, ""), 
     genres: m.genres,
-    rating: m.averageScore ? m.averageScore / 20 : null, 
     runtime: m.type === "ANIME" ? m.duration : m.chapters || m.volumes,
   }));
 }
@@ -110,6 +109,16 @@ export async function getAniListById(id: number) {
             name
           }
         }
+        staff(perPage: 10) {
+          edges {
+            role
+            node {
+              name {
+                full
+              }
+            }
+          }
+        }
       }
     }
   `;
@@ -119,6 +128,14 @@ export async function getAniListById(id: number) {
   if (!m) return null;
 
   const type = m.type === "ANIME" ? "anime" : "manga";
+  
+  const creator = m.staff?.edges?.find((e: any) => 
+    e.role.toLowerCase().includes("director") || 
+    e.role.toLowerCase().includes("author") || 
+    e.role.toLowerCase().includes("original story")
+  )?.node?.name?.full 
+    || m.studios?.nodes?.[0]?.name 
+    || "Unknown Creator";
 
   return {
     id: `anilist-${m.id}`,
@@ -131,10 +148,13 @@ export async function getAniListById(id: number) {
     posterUrl: m.coverImage.large,
     backdropUrl: m.bannerImage,
     year: m.startDate.year,
-    creator: m.studios?.nodes?.[0]?.name || "Unknown",
+    releaseYear: m.startDate.year,
+    creator,
     description: m.description?.replace(/<[^>]*>?/gm, ""),
     genres: m.genres,
-    rating: m.averageScore ? m.averageScore / 20 : null,
     runtime: m.type === "ANIME" ? m.duration : m.chapters || m.volumes,
+    episodes: m.episodes,
+    chapters: m.chapters,
+    volumes: m.volumes,
   };
 }

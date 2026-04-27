@@ -107,7 +107,6 @@ export async function searchGoogleBooks(query: string, startIndex: number = 0) {
         creator: info.authors?.join(", ") || "Unknown",
         description: info.description || "",
         genres: info.categories || [],
-        rating: info.averageRating || 0,
         runtime: info.pageCount || 0,
       };
     });
@@ -140,15 +139,16 @@ export async function getBookById(id: string) {
     return {
       id: `gb-${book.id}`,
       category: "read" as const,
-      type: "book",
+      type: info.categories?.some((c: string) => c.toLowerCase().includes("manga") || c.toLowerCase().includes("comics")) ? "manga" : "book",
       title: info.title,
       slug: info.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       posterUrl: info.imageLinks?.thumbnail?.replace("http:", "https:"),
+      backdropUrl: info.imageLinks?.extraLarge?.replace("http:", "https:") || info.imageLinks?.large?.replace("http:", "https:") || null,
+      releaseYear: info.publishedDate ? new Date(info.publishedDate).getFullYear() : null,
       year: info.publishedDate ? new Date(info.publishedDate).getFullYear() : null,
-      creator: info.authors?.join(", ") || "Unknown",
-      description: info.description || "",
+      creator: info.authors?.join(", ") || "Unknown Author",
+      description: info.description || "No description available.",
       genres: info.categories || [],
-      rating: info.averageRating || 0,
       runtime: info.pageCount || 0,
     };
   } catch (error) {

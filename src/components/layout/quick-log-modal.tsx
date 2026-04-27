@@ -56,7 +56,7 @@ export function QuickLogModal() {
         onClick={closeQuickLog}
       />
       
-      <div className="relative w-full max-w-xl bg-traced-bg border-hairline shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300">
+      <div className="relative w-full max-w-xl bg-traced-bg border-hairline flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300">
         <div className="flex items-center justify-between p-6 border-b-hairline bg-white">
           <h2 className="tracking-[0.05em] uppercase text-traced-dark font-sans font-semibold text-[13px]">
             Quick Log Activity
@@ -79,13 +79,13 @@ export function QuickLogModal() {
                     key={item.id}
                     onClick={() => setSelectedId(item.id)}
                     className={`flex items-center gap-4 p-3 border-hairline cursor-pointer transition-all ${
-                      selectedId === item.id ? 'bg-traced-accent text-white border-traced-accent shadow-md' : 'bg-white hover:bg-traced-surface text-traced-dark'
+                      selectedId === item.id ? 'bg-traced-accent text-white border-traced-accent' : 'bg-white hover:bg-traced-surface text-traced-dark'
                     }`}
                   >
                     <div className="w-10 h-15 shrink-0 bg-traced-surface border-hairline overflow-hidden">
-                       <img src={item.posterUrl} alt="" className={`size-full object-cover ${selectedId === item.id ? 'grayscale-0' : 'grayscale'}`} />
+                       <img src={item.posterUrl} alt="" className="size-full object-cover" />
                     </div>
-                    <div className="flex flex-col">
+                    <div className="grow flex flex-col">
                       <span className="font-serif font-medium text-[15px]">{item.title}</span>
                       <span className={`text-[10px] uppercase tracking-widest ${selectedId === item.id ? 'text-white/80' : 'text-[#737373]'}`}>
                         {item.type}

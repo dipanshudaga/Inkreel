@@ -7,7 +7,7 @@ import { Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ImportPage() {
-  const [isImporting, setIsImporting] = useState(false);
+  const [importingType, setImportingType] = useState<"letterboxd" | "goodreads" | null>(null);
   const [result, setResult] = useState<{ imported: number; skipped: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,7 +15,7 @@ export default function ImportPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsImporting(true);
+    setImportingType(type);
     setResult(null);
     setError(null);
 
@@ -40,12 +40,12 @@ export default function ImportPage() {
           setError("An error occurred during import.");
           console.error(err);
         } finally {
-          setIsImporting(false);
+          setImportingType(null);
         }
       },
       error: (err) => {
         setError(`Failed to parse CSV: ${err.message}`);
-        setIsImporting(false);
+        setImportingType(null);
       }
     });
   };
@@ -70,7 +70,8 @@ export default function ImportPage() {
           title="Letterboxd"
           description="Upload your diary.csv to import your watched movies."
           onUpload={(e) => handleFileUpload(e, "letterboxd")}
-          isImporting={isImporting}
+          isImporting={importingType === "letterboxd"}
+          disabled={importingType !== null && importingType !== "letterboxd"}
         />
 
         {/* Goodreads Card */}
@@ -78,7 +79,8 @@ export default function ImportPage() {
           title="Goodreads"
           description="Upload your library_export.csv to import your books."
           onUpload={(e) => handleFileUpload(e, "goodreads")}
-          isImporting={isImporting}
+          isImporting={importingType === "goodreads"}
+          disabled={importingType !== null && importingType !== "goodreads"}
         />
       </div>
 
@@ -104,9 +106,24 @@ export default function ImportPage() {
   );
 }
 
-function ImportCard({ title, description, onUpload, isImporting }: { title: string; description: string; onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void; isImporting: boolean }) {
+function ImportCard({ 
+  title, 
+  description, 
+  onUpload, 
+  isImporting,
+  disabled 
+}: { 
+  title: string; 
+  description: string; 
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void; 
+  isImporting: boolean;
+  disabled?: boolean;
+}) {
   return (
-    <div className="flex flex-col border-hairline bg-white p-10 gap-8 group hover:shadow-xl transition-all duration-700">
+    <div className={cn(
+      "flex flex-col border-hairline bg-white p-10 gap-8 group transition-all duration-300",
+      disabled && "opacity-50 pointer-events-none"
+    )}>
       <div className="flex flex-col gap-2">
         <h3 className="text-3xl font-serif font-medium italic text-traced-dark group-hover:text-traced-accent transition-colors">{title}</h3>
         <p className="text-[#737373] text-[14px] leading-relaxed">{description}</p>
@@ -118,7 +135,7 @@ function ImportCard({ title, description, onUpload, isImporting }: { title: stri
           accept=".csv"
           className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
           onChange={onUpload}
-          disabled={isImporting}
+          disabled={isImporting || disabled}
         />
         <div className={cn(
           "flex items-center justify-center gap-3 py-4 px-6 border border-[#1A1A1A] font-sans font-bold text-[11px] uppercase tracking-[0.2em] transition-all",

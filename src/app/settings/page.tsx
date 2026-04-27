@@ -31,52 +31,6 @@ export default async function SettingsPage() {
       <div className="flex flex-col gap-12 max-w-2xl">
         <section className="flex flex-col gap-6">
           <h2 className="tracking-[0.05em] uppercase text-[#737373] font-sans font-semibold text-[13px] border-b-hairline pb-4">
-            Database Statistics
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {stats.map((stat) => (
-              <div key={stat.label} className="bg-white border-hairline p-8 flex flex-col gap-4">
-                <stat.icon className="h-5 w-5 text-traced-accent" strokeWidth={1.5} />
-                <div className="flex flex-col">
-                  <span className="text-4xl font-serif font-medium text-traced-dark italic">
-                    {stat.value}
-                  </span>
-                  <span className="text-[11px] uppercase tracking-widest text-[#737373] font-sans font-bold mt-2">
-                    {stat.label}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-6">
-          <h2 className="tracking-[0.05em] uppercase text-[#737373] font-sans font-semibold text-[13px] border-b-hairline pb-4">
-            Data Management
-          </h2>
-          <div className="flex flex-col border-hairline bg-white divide-y divide-[#F0F0F0]">
-            <div className="p-6 flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="font-serif italic text-lg text-traced-dark">Storage Mode</span>
-                <span className="text-[13px] text-[#737373]">Currently using Supabase (Remote PostgreSQL)</span>
-              </div>
-              <div className="px-4 py-1.5 border-hairline bg-traced-surface text-[10px] uppercase tracking-widest font-bold">
-                Cloud Sync Active
-              </div>
-            </div>
-            
-            <button className="p-6 flex items-center justify-between hover:bg-red-50 group transition-colors cursor-pointer text-left">
-              <div className="flex flex-col gap-1">
-                <span className="font-serif italic text-lg text-red-900 group-hover:text-red-600">Reset Database</span>
-                <span className="text-[13px] text-red-700/60">Permanently delete all archived items and logs.</span>
-              </div>
-              <Trash2 className="h-5 w-5 text-red-200 group-hover:text-red-500 transition-colors" />
-            </button>
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-6">
-          <h2 className="tracking-[0.05em] uppercase text-[#737373] font-sans font-semibold text-[13px] border-b-hairline pb-4">
             About Traced.
           </h2>
           <div className="p-8 border-hairline bg-white/50 flex flex-col gap-4">

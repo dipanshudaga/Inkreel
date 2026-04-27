@@ -67,7 +67,7 @@ export function SearchModal() {
       onClick={close}
     >
       <div 
-        className="w-[720px] flex flex-col bg-traced-bg border border-[#1A1A1A] shadow-2xl animate-in zoom-in-95 slide-in-from-top-4 duration-300"
+        className="w-[720px] flex flex-col bg-traced-bg border border-[#1A1A1A] animate-in zoom-in-95 slide-in-from-top-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center py-6 px-8 gap-4 border-b border-[#1A1A1A]">

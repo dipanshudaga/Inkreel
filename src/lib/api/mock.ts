@@ -14,7 +14,7 @@ export interface MediaItem {
   creator: string;
   description: string;
   genres: string[];
-  rating: number;
+  rating?: number;
   runtime?: number;
   duration?: number;
   pageCount?: number;

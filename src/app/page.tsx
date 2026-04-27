@@ -47,10 +47,10 @@ export default async function Home() {
                 href={`/items/${item.id}`}
                 className="flex flex-col gap-6 group"
               >
-                <div className="w-full aspect-[2/3] overflow-hidden border-hairline bg-traced-surface relative shadow-sm group-hover:shadow-xl transition-all duration-700">
+                <div className="w-full aspect-[2/3] overflow-hidden border-hairline bg-traced-surface relative transition-all duration-700">
                   {item.posterUrl ? (
                     <div 
-                      className="bg-cover bg-center grayscale w-full h-full group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
+                      className="bg-cover bg-center w-full h-full group-hover:scale-105 transition-all duration-1000" 
                       style={{ backgroundImage: `url(${item.posterUrl})` }} 
                     />
                   ) : (
@@ -77,11 +77,6 @@ export default async function Home() {
                 </div>
               </Link>
             ))}
-            {trendingWatch.length === 0 && (
-              <div className="col-span-full py-16 text-center text-[#737373] font-sans text-xs uppercase tracking-widest">
-                No recommendations found.
-              </div>
-            )}
           </div>
         </div>
 
@@ -100,10 +95,10 @@ export default async function Home() {
                 href={`/items/${item.id}`}
                 className="flex flex-col gap-6 group"
               >
-                <div className="w-full aspect-[2/3] overflow-hidden border-hairline bg-traced-surface relative shadow-sm group-hover:shadow-xl transition-all duration-700">
+                <div className="w-full aspect-[2/3] overflow-hidden border-hairline bg-traced-surface relative transition-all duration-700">
                   {item.posterUrl ? (
                     <div 
-                      className="bg-cover bg-center grayscale w-full h-full group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000" 
+                      className="bg-cover bg-center w-full h-full group-hover:scale-105 transition-all duration-1000" 
                       style={{ backgroundImage: `url(${item.posterUrl})` }} 
                     />
                   ) : (
@@ -130,11 +125,6 @@ export default async function Home() {
                 </div>
               </Link>
             ))}
-            {trendingRead.length === 0 && (
-              <div className="col-span-full py-16 text-center text-[#737373] font-sans text-xs uppercase tracking-widest">
-                No recommendations found.
-              </div>
-            )}
           </div>
         </div>
 
