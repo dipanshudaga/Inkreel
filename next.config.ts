@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // PPR has been merged into cacheComponents in Next.js 16
+  cacheComponents: true,
   images: {
     remotePatterns: [
       {
@@ -22,6 +24,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "books.google.com",
       },
     ],
   },

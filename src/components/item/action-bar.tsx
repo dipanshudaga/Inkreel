@@ -2,187 +2,161 @@
 
 import { useState } from "react";
 import { Plus, Eye, Heart, Loader2, Check, Bookmark } from "lucide-react";
-import { saveMediaAction } from "@/lib/actions/media";
+import { saveMediaAction, updateMediaAction } from "@/lib/actions/media";
 import { useRouter } from "next/navigation";
-import { useLogModal } from "@/hooks/use-log-modal";
-
-type ActionState = "watched" | "watchlist" | "love" | null;
+import { useMediaStore } from "@/store/use-media-store";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 interface ActionBarProps {
   initialStatus?: string | null;
-  initialRating?: number | null;
   mediaId: string;
   isExternal?: boolean;
-  variant?: "default" | "compact";
-  item?: any; // Full item data for the log modal
+  variant?: "default" | "compact" | "grid";
+  item?: any;
 }
 
 export function ActionBar({ 
   initialStatus, 
-  initialRating, 
   mediaId, 
   isExternal: initialIsExternal,
   variant = "default",
   item
 }: ActionBarProps) {
   const router = useRouter();
-  const logModal = useLogModal();
+  const { data: session } = useSession();
+  const storeItem = useMediaStore((state) => state.items[mediaId]);
+  const updateStoreItem = useMediaStore((state) => state.updateItem);
+  
   const [isExternal, setIsExternal] = useState(initialIsExternal);
-  const [loading, setLoading] = useState<ActionState>(null);
+  const [loading, setLoading] = useState<string | null>(null);
 
-  const getInitialState = (): ActionState => {
-    if (initialStatus === "completed") return "watched";
-    if (initialStatus === "plan_to_watch" || initialStatus === "plan_to_read") return "watchlist";
-    if (initialRating && initialRating >= 4.5) return "love";
-    return null;
-  };
+  // Use store value if available, otherwise fallback to prop
+  const status = storeItem ? storeItem.status : initialStatus;
 
-  const [active, setActive] = useState<ActionState>(initialIsExternal ? null : getInitialState());
+  const isCompleted = status === "completed" || status === "loved";
+  const isPlanned = status === "watchlist" || status === "shelf";
+  const isLoved = status === "loved";
 
-  const handleAction = async (action: ActionState) => {
-    if (active === action) return;
+  const handleAction = async (action: string) => {
+    if (!session) {
+      router.push("/login");
+      return;
+    }
     
+    if (loading) return;
     setLoading(action);
+
     try {
+      let nextStatus: string | null = null;
+      const category = item?.category || (item?.type === 'book' || item?.type === 'manga' ? 'read' : 'watch');
+
+      if (action === "completed") {
+        nextStatus = isCompleted ? null : "completed";
+      } else if (action === "planned") {
+        nextStatus = isPlanned ? null : (category === "read" ? "shelf" : "watchlist");
+      } else if (action === "loved") {
+        nextStatus = isLoved ? "completed" : "loved";
+      }
+
       if (isExternal) {
-        const res = await saveMediaAction(mediaId, action || "watchlist", action === "love" ? 5 : null);
+        const res = await saveMediaAction(mediaId, nextStatus || "watchlist");
         if (res.success) {
-          setActive(action);
+          if (res.id) {
+            updateStoreItem(res.id, nextStatus, null);
+          }
           setIsExternal(false);
           router.refresh();
           if (res.id) router.push(`/items/${res.id}`);
         }
       } else {
-        setActive(action);
+        // Optimistic Update
+        updateStoreItem(mediaId, nextStatus, null);
+        await updateMediaAction(mediaId, nextStatus || "none");
+        router.refresh();
       }
     } catch (err) {
       console.error("Action failed:", err);
+      updateStoreItem(mediaId, initialStatus, null);
     } finally {
       setLoading(null);
     }
   };
 
-  const handleLog = () => {
-    if (!item) return;
-    logModal.onOpen({
-      id: item.id || mediaId,
-      title: item.title,
-      category: item.category || (item.type === 'movie' || item.type === 'tv' ? 'watch' : 'read'),
-      type: item.type,
-      posterUrl: item.posterUrl,
-      backdropUrl: item.backdropUrl,
-      year: item.releaseYear || item.year,
-      creator: item.creator,
-      description: item.description,
-      genres: Array.isArray(item.genres) ? item.genres : item.genres?.split(", "),
-      runtime: item.runtime,
-      externalId: item.externalId || mediaId,
-    });
-  };
+  const isRead = item?.category === 'read' || item?.type === 'book' || item?.type === 'manga';
 
-  if (variant === "compact") {
+  const Button = ({ action, active, icon: Icon, label, color = "dark" }: any) => (
+    <button
+      onClick={() => handleAction(action)}
+      disabled={!!loading}
+      className={cn(
+        "flex flex-col items-center gap-2 group transition-all disabled:opacity-50 cursor-pointer",
+        active ? "opacity-100" : "opacity-30 hover:opacity-100",
+        active && color === "accent" && "text-traced-accent"
+      )}
+    >
+      <div className={cn(
+        "size-14 flex items-center justify-center border border-black/10 transition-all duration-300",
+        active 
+          ? (color === "accent" ? "bg-traced-accent text-white border-traced-accent" : "bg-black text-white border-black") 
+          : "bg-transparent hover:border-black"
+      )}>
+        {loading === action ? (
+          <Loader2 size={18} className="animate-spin" />
+        ) : (
+          <Icon size={22} strokeWidth={active ? 2.5 : 2} fill={active && action === "loved" ? "currentColor" : "none"} />
+        )}
+      </div>
+      <span className="text-[8px] font-bold uppercase tracking-[0.2em]">{label}</span>
+    </button>
+  );
+
+  if (variant === "grid") {
     return (
-      <div className="flex items-center gap-10">
-        <div className="flex items-center gap-6">
-          {/* Watched */}
-          <button
-            onClick={() => handleAction("watched")}
-            disabled={!!loading}
-            title="Mark as Watched"
-            className={`flex flex-col items-center gap-1.5 group transition-all ${active === 'watched' ? 'opacity-100 scale-110' : 'opacity-50 hover:opacity-80'} disabled:opacity-50 cursor-pointer`}
-          >
-            <div className={`p-2 border border-black/10 transition-colors ${active === 'watched' ? 'bg-black text-white border-black' : 'bg-transparent'}`}>
-              {loading === "watched" ? <Loader2 size={18} className="animate-spin" /> : <Check size={20} strokeWidth={3} />}
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-wider">Watched</span>
-          </button>
-
-          {/* Watchlist */}
-          <button
-            onClick={() => handleAction("watchlist")}
-            disabled={!!loading}
-            title="Add to Watchlist"
-            className={`flex flex-col items-center gap-1.5 group transition-all ${active === 'watchlist' ? 'opacity-100 scale-110' : 'opacity-50 hover:opacity-80'} disabled:opacity-50 cursor-pointer`}
-          >
-            <div className={`p-2 border border-black/10 transition-colors ${active === 'watchlist' ? 'bg-black text-white border-black' : 'bg-transparent'}`}>
-              {loading === "watchlist" ? <Loader2 size={18} className="animate-spin" /> : <Bookmark size={20} strokeWidth={2.5} />}
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-wider">Watchlist</span>
-          </button>
-
-          {/* Love */}
-          <button
-            onClick={() => handleAction("love")}
-            disabled={!!loading}
-            title="Favorite"
-            className={`flex flex-col items-center gap-1.5 group transition-all ${active === 'love' ? 'opacity-100 scale-110 text-traced-accent' : 'opacity-50 hover:opacity-80'} disabled:opacity-50 cursor-pointer`}
-          >
-            <div className={`p-2 border border-black/10 transition-colors ${active === 'love' ? 'bg-traced-accent text-white border-traced-accent' : 'bg-transparent'}`}>
-              {loading === "love" ? <Loader2 size={18} className="animate-spin" /> : <Heart size={20} strokeWidth={2.5} fill={active === 'love' ? "currentColor" : "none"} />}
-            </div>
-            <span className="text-[8px] font-bold uppercase tracking-wider">Love</span>
-          </button>
-        </div>
-
-        <button 
-          onClick={handleLog}
-          className="h-10 px-8 bg-black text-white text-[11px] font-bold uppercase tracking-widest hover:bg-traced-accent transition-colors cursor-pointer border border-black"
+      <div className="flex border-hairline border-t-0 divide-x divide-traced-dark h-9 bg-traced-bg w-full">
+        <button
+          onClick={() => handleAction("completed")}
+          className={cn("flex-1 flex items-center justify-center transition-colors", isCompleted ? "bg-black text-white" : "text-traced-gray hover:bg-black/5")}
         >
-          Log Entry
+          {loading === "completed" ? <Loader2 size={14} className="animate-spin" /> : (isRead ? <Check size={16} /> : <Eye size={16} />)}
+        </button>
+        <button
+          onClick={() => handleAction("planned")}
+          className={cn("flex-1 flex items-center justify-center transition-colors", isPlanned ? "bg-black text-white" : "text-traced-gray hover:bg-black/5")}
+        >
+          {loading === "planned" ? <Loader2 size={14} className="animate-spin" /> : <Bookmark size={16} />}
+        </button>
+        <button
+          onClick={() => handleAction("loved")}
+          className={cn("flex-1 flex items-center justify-center transition-colors", isLoved ? "bg-traced-accent text-white" : "text-traced-gray hover:bg-black/5")}
+        >
+          {loading === "loved" ? <Loader2 size={14} className="animate-spin" /> : <Heart size={16} fill={isLoved ? "currentColor" : "none"} />}
         </button>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-between w-full">
-      {/* Watched */}
-      <button
-        onClick={() => handleAction("watched")}
-        disabled={!!loading}
-        className="flex flex-col items-center gap-3 group cursor-pointer disabled:opacity-50"
-      >
-        <div className={`size-14 border border-[#1A1A1A] flex items-center justify-center transition-all duration-300 ${
-          active === "watched"
-            ? "bg-traced-dark border-traced-dark text-white scale-110"
-            : "bg-white hover:bg-traced-surface text-[#737373]"
-        }`}>
-          {loading === "watched" ? <Loader2 size={20} className="animate-spin" /> : <Eye size={22} strokeWidth={2} />}
-        </div>
-        <span className="uppercase tracking-[0.2em] text-[#737373] font-sans font-bold text-[9px]">Watched</span>
-      </button>
-
-      {/* Watchlist */}
-      <button
-        onClick={() => handleAction("watchlist")}
-        disabled={!!loading}
-        className="flex flex-col items-center gap-3 group cursor-pointer disabled:opacity-50"
-      >
-        <div className={`size-14 border border-[#1A1A1A] flex items-center justify-center transition-all duration-300 ${
-          active === "watchlist"
-            ? "bg-traced-dark border-traced-dark text-white scale-110"
-            : "bg-white hover:bg-traced-surface text-[#737373]"
-        }`}>
-          {loading === "watchlist" ? <Loader2 size={20} className="animate-spin" /> : <Plus size={22} strokeWidth={2.5} />}
-        </div>
-        <span className="uppercase tracking-[0.2em] text-[#737373] font-sans font-bold text-[9px]">Watchlist</span>
-      </button>
-
-      {/* Love */}
-      <button
-        onClick={() => handleAction("love")}
-        disabled={!!loading}
-        className="flex flex-col items-center gap-3 group cursor-pointer disabled:opacity-50"
-      >
-        <div className={`size-14 border border-[#1A1A1A] flex items-center justify-center transition-all duration-300 ${
-          active === "love"
-            ? "bg-traced-accent border-traced-accent text-white scale-110"
-            : "bg-white hover:bg-traced-surface text-[#737373]"
-        }`}>
-          {loading === "love" ? <Loader2 size={20} className="animate-spin" /> : <Heart size={22} strokeWidth={2} fill={active === "love" ? "currentColor" : "none"} />}
-        </div>
-        <span className="uppercase tracking-[0.2em] text-[#737373] font-sans font-bold text-[9px]">Love</span>
-      </button>
+    <div className="flex items-center justify-center gap-8 w-full">
+      <Button 
+        action="completed" 
+        active={isCompleted} 
+        icon={isRead ? Check : Eye} 
+        label={isRead ? "Read" : "Watched"} 
+      />
+      <Button 
+        action="planned" 
+        active={isPlanned} 
+        icon={Bookmark} 
+        label={isRead ? "Shelf" : "Watchlist"} 
+      />
+      <Button 
+        action="loved" 
+        active={isLoved} 
+        icon={Heart} 
+        label="Love" 
+        color="accent"
+      />
     </div>
   );
 }

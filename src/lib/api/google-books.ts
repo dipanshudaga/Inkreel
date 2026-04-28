@@ -1,158 +1,62 @@
-const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
-const GOOGLE_BOOKS_BASE_URL = "https://www.googleapis.com/books/v1";
+const GOOGLE_BOOKS_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
 
-export const MOCK_BOOKS = [
-  {
-    id: "gb-dune-1",
+export async function searchBooks(query: string) {
+  const res = await fetch(`${GOOGLE_BOOKS_BASE_URL}?q=${encodeURIComponent(query)}&maxResults=10`);
+  const data = await res.json();
+  
+  return data.items?.map((item: any) => ({
+    id: `gb-${item.id}`,
+    title: item.volumeInfo.title,
     category: "read",
     type: "book",
-    title: "Dune",
-    slug: "dune",
-    posterUrl: "https://books.google.com/books/content?id=B1hPr9uS9PMC&printsec=frontcover&img=1&zoom=1",
-    year: 1965,
-    creator: "Frank Herbert",
-    description: "Set on the desert planet Arrakis, Dune is the story of the boy Paul Atreides, heir to a noble family tasked with ruling an inhospitable world where the only thing of value is the 'spice' melange.",
-    genres: ["Science Fiction", "Epic"],
-    rating: 5,
-    runtime: 688,
-  },
-  {
-    id: "gb-project-hail-mary",
-    category: "read",
-    type: "book",
-    title: "Project Hail Mary",
-    slug: "project-hail-mary",
-    posterUrl: "https://books.google.com/books/content?id=9_kREAAAQBAJ&printsec=frontcover&img=1&zoom=1",
-    year: 2021,
-    creator: "Andy Weir",
-    description: "Ryland Grace is the sole survivor on a desperate, last-chance mission—and if he fails, humanity and the earth itself will perish.",
-    genres: ["Science Fiction", "Thriller"],
-    rating: 4.8,
-    runtime: 476,
-  },
-  {
-    id: "gb-dark-matter",
-    category: "read",
-    type: "book",
-    title: "Dark Matter",
-    slug: "dark-matter",
-    posterUrl: "https://books.google.com/books/content?id=XFp0CwAAQBAJ&printsec=frontcover&img=1&zoom=1",
-    year: 2016,
-    creator: "Blake Crouch",
-    description: "'Are you happy with your life?' Those are the last words Jason Dessen hears before the masked abductor knocks him unconscious.",
-    genres: ["Science Fiction", "Mystery"],
-    rating: 4.5,
-    runtime: 342,
-  },
-  {
-    id: "gb-neuromancer",
-    category: "read",
-    type: "book",
-    title: "Neuromancer",
-    slug: "neuromancer",
-    posterUrl: "https://books.google.com/books/content?id=OQy9AAAAQBAJ&printsec=frontcover&img=1&zoom=1",
-    year: 1984,
-    creator: "William Gibson",
-    description: "Case is the sharpest data-thief in the matrix, until he crossed the wrong people and they burned his nervous system with a toxin.",
-    genres: ["Cyberpunk", "Sci-Fi"],
-    rating: 4.7,
-    runtime: 271,
-  }
-];
+    posterUrl: item.volumeInfo.imageLinks?.thumbnail,
+    year: item.volumeInfo.publishedDate?.split("-")[0],
+  })) || [];
+}
 
-export async function searchGoogleBooks(query: string, startIndex: number = 0) {
+export async function getTrendingBooks(startIndex = 0) {
+  // Use a generic query for popular books since Google Books doesn't have a "trending" endpoint
+  const url = `${GOOGLE_BOOKS_BASE_URL}?q=subject:fiction&orderBy=newest&startIndex=${startIndex}&maxResults=10`;
   try {
-    const keyPart = GOOGLE_BOOKS_API_KEY ? `&key=${GOOGLE_BOOKS_API_KEY}` : "";
-    const url = `${GOOGLE_BOOKS_BASE_URL}/volumes?q=${encodeURIComponent(query)}${keyPart}&startIndex=${startIndex}&maxResults=20`;
-    
-    console.log(`Fetching Google Books: ${url.replace(GOOGLE_BOOKS_API_KEY || "", "REDACTED")}`);
-    let response;
-    try {
-      response = await fetch(url, { next: { revalidate: 3600 } });
-      
-      // If 503 or 429, try keyless fallback if we were using a key
-      if (!response.ok && (response.status === 503 || response.status === 429 || response.status === 403) && GOOGLE_BOOKS_API_KEY) {
-        console.warn(`Google Books API restricted [${response.status}]. Trying keyless fallback...`);
-        const keylessUrl = `${GOOGLE_BOOKS_BASE_URL}/volumes?q=${encodeURIComponent(query)}&startIndex=${startIndex}&maxResults=20`;
-        response = await fetch(keylessUrl, { next: { revalidate: 3600 } });
-      }
-    } catch (fetchError: any) {
-      console.error(`Google Books fetch system error: ${fetchError.message}`);
-      return [];
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Google Books API Error: ${res.status}`);
     }
+    const data = await res.json();
     
-    if (!response.ok) {
-      console.warn(`Google Books API Error [${response.status}] for query "${query}".`);
-      return [];
-    }
-    
-    const data = await response.json();
-    if (!data.items) {
-      return [];
-    }
-
-    return data.items.map((book: any) => {
-      const info = book.volumeInfo || {};
-      const isManga = info.categories?.some((c: string) => c.toLowerCase().includes("manga") || c.toLowerCase().includes("comics"));
-      const type = isManga ? "manga" : "book";
-
-      return {
-        id: `gb-${book.id}`,
-        category: "read",
-        type,
-        title: info.title,
-        slug: info.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        posterUrl: info.imageLinks?.thumbnail?.replace("http:", "https:"),
-        year: info.publishedDate ? new Date(info.publishedDate).getFullYear() : null,
-        creator: info.authors?.join(", ") || "Unknown",
-        description: info.description || "",
-        genres: info.categories || [],
-        runtime: info.pageCount || 0,
-      };
-    });
+    return data.items?.map((item: any) => ({
+      id: `gb-${item.id}`,
+      title: item.volumeInfo.title,
+      category: "read",
+      type: "book",
+      posterUrl: item.volumeInfo.imageLinks?.thumbnail || item.volumeInfo.imageLinks?.smallThumbnail,
+      year: item.volumeInfo.publishedDate?.split("-")[0],
+    })) || [];
   } catch (error) {
-    console.error("Google Books Search Error:", error);
-    return [];
+    console.error("Fetch trending books failed:", error);
+    throw error;
   }
 }
 
-export async function getTrendingBooks(startIndex: number = 0) {
-  // Google Books doesn't have a direct "trending" end point like TMDB.
-  // Using subject:fiction as a proxy for discovery
-  const results = await searchGoogleBooks("subject:fiction", startIndex);
-  if (!results || results.length === 0) {
-    return startIndex === 0 ? MOCK_BOOKS : [];
-  }
-  return results;
-}
 export async function getBookById(id: string) {
-  try {
-    const keyPart = GOOGLE_BOOKS_API_KEY ? `?key=${GOOGLE_BOOKS_API_KEY}` : "";
-    const url = `${GOOGLE_BOOKS_BASE_URL}/volumes/${id}${keyPart}`;
-    
-    const response = await fetch(url);
-    if (!response.ok) return null;
+  const res = await fetch(`${GOOGLE_BOOKS_BASE_URL}/${id}`);
+  const data = await res.json();
+  const info = data.volumeInfo;
 
-    const book = await response.json();
-    const info = book.volumeInfo || {};
-
-    return {
-      id: `gb-${book.id}`,
-      category: "read" as const,
-      type: info.categories?.some((c: string) => c.toLowerCase().includes("manga") || c.toLowerCase().includes("comics")) ? "manga" : "book",
-      title: info.title,
-      slug: info.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      posterUrl: info.imageLinks?.thumbnail?.replace("http:", "https:"),
-      backdropUrl: info.imageLinks?.extraLarge?.replace("http:", "https:") || info.imageLinks?.large?.replace("http:", "https:") || null,
-      releaseYear: info.publishedDate ? new Date(info.publishedDate).getFullYear() : null,
-      year: info.publishedDate ? new Date(info.publishedDate).getFullYear() : null,
-      creator: info.authors?.join(", ") || "Unknown Author",
-      description: info.description || "No description available.",
-      genres: info.categories || [],
-      runtime: info.pageCount || 0,
-    };
-  } catch (error) {
-    console.error("Google Books Detail Error:", error);
-    return null;
-  }
+  return {
+    id: `gb-${data.id}`,
+    title: info.title,
+    subtitle: info.subtitle,
+    category: "read",
+    type: "book",
+    format: info.printType === "BOOK" ? "Book" : "Magazine",
+    posterUrl: info.imageLinks?.medium || info.imageLinks?.thumbnail,
+    year: info.publishedDate?.split("-")[0],
+    releaseYear: parseInt(info.publishedDate?.split("-")[0]),
+    creator: info.authors?.join(", "),
+    genres: info.categories,
+    description: info.description,
+    pageCount: info.pageCount,
+    languageCode: info.language,
+  };
 }

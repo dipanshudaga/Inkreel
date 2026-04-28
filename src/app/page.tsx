@@ -2,23 +2,20 @@ import { getTrendingWatch } from "@/lib/api/tmdb";
 import { getTrendingBooks } from "@/lib/api/google-books";
 import Link from "next/link";
 import { Suspense } from "react";
+import { DynamicGreeting } from "@/components/layout/dynamic-greeting";
+import { auth } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
+export default async function Home() {
+  const session = await auth();
 
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning.";
-  if (hour < 18) return "Good afternoon.";
-  return "Good evening.";
-}
+  if (!session) {
+    return <LandingPage />;
+  }
 
-export default function Home() {
   return (
     <div className="grow flex flex-col py-16 px-20 min-h-screen bg-traced-bg overflow-y-auto">
       <div className="mb-16">
-        <h1 className="text-[72px] leading-[1.1] tracking-[-0.03em] text-traced-dark font-serif font-medium italic m-0">
-          {getGreeting()}
-        </h1>
+        <DynamicGreeting />
         <div className="mt-8 flex items-center gap-4">
           <div className="h-px w-12 bg-traced-accent" />
           <p className="tracking-[0.1em] uppercase text-[#737373] font-sans text-xs font-semibold">
@@ -40,14 +37,58 @@ export default function Home() {
   );
 }
 
+function LandingPage() {
+  return (
+    <div className="min-h-screen bg-traced-bg flex flex-col items-center justify-center px-6 text-center">
+      <div className="max-w-2xl flex flex-col items-center gap-12">
+        <h1 className="text-[80px] md:text-[120px] leading-[0.9] tracking-[-0.04em] text-traced-dark font-serif font-medium italic">
+          Inkreel.
+        </h1>
+        
+        <div className="flex flex-col gap-6">
+          <p className="text-xl md:text-2xl font-serif italic text-traced-gray max-w-lg">
+            A private personal media diary for the things you watch and read.
+          </p>
+          <div className="h-px w-24 bg-traced-accent mx-auto" />
+          <p className="tracking-[0.2em] uppercase text-traced-gray font-sans text-[10px] font-bold">
+            ARCHIVE YOUR CULTURAL JOURNEY
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4 w-full max-w-xs">
+          <Link 
+            href="/login" 
+            className="bg-traced-dark text-white py-5 px-8 font-sans font-bold uppercase tracking-[0.2em] text-sm hover:bg-traced-accent transition-all duration-500 text-center"
+          >
+            Enter the Archive
+          </Link>
+          <p className="text-[10px] font-sans text-traced-gray uppercase tracking-widest">
+            PRIVATE • SECURE • MINIMAL
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 async function TrendingWatch() {
-  const items = await getTrendingWatch(1).then(res => res.slice(0, 5));
-  return <TrendingSection title="Watch" href="/watch" items={items} />;
+  try {
+    const items = await getTrendingWatch(1).then(res => res.slice(0, 5));
+    return <TrendingSection title="Watch" href="/watch" items={items} />;
+  } catch (e) {
+    console.error("TrendingWatch fetch failed:", e);
+    return <TrendingSection title="Watch" href="/watch" items={[]} />;
+  }
 }
 
 async function TrendingRead() {
-  const items = await getTrendingBooks(0).then(res => res.slice(0, 5));
-  return <TrendingSection title="Read" href="/read" items={items} />;
+  try {
+    const items = await getTrendingBooks(0).then(res => res.slice(0, 5));
+    return <TrendingSection title="Read" href="/read" items={items} />;
+  } catch (e) {
+    console.error("TrendingRead fetch failed:", e);
+    return <TrendingSection title="Read" href="/read" items={[]} />;
+  }
 }
 
 function TrendingSection({ title, href, items }: { title: string, href: string, items: any[] }) {

@@ -3,7 +3,6 @@
 import { useSearchStore } from "@/store/use-search-store";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 
 export function SearchModal() {
   const { isOpen, close, query, setQuery } = useSearchStore();
@@ -153,7 +152,8 @@ export function SearchModal() {
                           key={item.id} 
                           className={`flex items-center py-3 px-8 gap-4 cursor-pointer hover:bg-traced-surface transition-colors border-l-2 ${idx === 0 && (activeFilter !== 'all' || type === results[0].type) ? 'border-traced-accent bg-traced-surface' : 'border-transparent'}`}
                           onClick={() => {
-                            router.push(`/items/${item.id}`);
+                            const cat = (item.type === 'book' || item.type === 'manga') ? 'read' : 'watch';
+                            router.push(`/items/${item.id}?cat=${cat}`);
                             close();
                           }}
                         >
@@ -175,7 +175,7 @@ export function SearchModal() {
                               {item.title}
                             </div>
                             <div className="uppercase tracking-[0.05em] mt-1 text-[#737373] font-sans text-xs">
-                              {sublabel}{item.status ? ` • ${item.completedAt ? `Logged ${format(new Date(item.completedAt), "MMM d, yyyy")}` : 'In Archive'}` : ''}
+                              {sublabel}{item.status ? ` • ${item.status}` : ''}
                             </div>
                           </div>
                         </div>

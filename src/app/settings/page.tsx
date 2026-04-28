@@ -3,7 +3,6 @@ import { media, logs } from "@/lib/db/schema";
 import { sql } from "drizzle-orm";
 import { Settings as SettingsIcon, Database, Info, Trash2 } from "lucide-react";
 
-export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const [mediaCount] = await db.select({ count: sql<number>`count(*)` }).from(media);

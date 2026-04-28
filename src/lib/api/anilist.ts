@@ -1,175 +1,117 @@
 const ANILIST_API_URL = "https://graphql.anilist.co";
 
-async function safeAniListFetch(query: string, variables: any) {
-  try {
-    const res = await fetch(ANILIST_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({ query, variables }),
-      next: { revalidate: 3600 },
-    });
-
-    const json = await res.json();
-    if (json.errors) {
-      console.warn("AniList API Errors:", json.errors);
-      return null;
-    }
-    return json.data;
-  } catch (error: any) {
-    console.warn("AniList Fetch Error:", error?.message || error);
-    return null;
-  }
-}
-
-export async function searchAniList(query: string, type: "ANIME" | "MANGA") {
-  const searchQuery = `
-    query ($search: String, $type: MediaType) {
-      Page(perPage: 20) {
-        media(search: $search, type: $type) {
+export async function searchAniList(query: string) {
+  const graphqlQuery = `
+    query ($search: String) {
+      Page(perPage: 10) {
+        media(search: $search, sort: POPULARITY_DESC) {
           id
           title {
-            english
             romaji
-            native
+            english
           }
           type
           format
-          status
-          description
-          startDate {
-            year
-          }
-          genres
-          averageScore
           coverImage {
             large
           }
-          bannerImage
-          duration
-          chapters
-          volumes
-          studios(isMain: true) {
-            nodes {
-              name
-            }
-          }
-          staff(perPage: 1) {
-            edges {
-              node {
-                name {
-                  full
-                }
-              }
-            }
+          startDate {
+            year
           }
         }
       }
     }
   `;
 
-  const data = await safeAniListFetch(searchQuery, { search: query, type });
-  if (!data?.Page?.media) return [];
+  const res = await fetch(ANILIST_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      query: graphqlQuery,
+      variables: { search: query },
+    }),
+  });
 
-  return data.Page.media.map((m: any) => ({
-    id: `anilist-${m.id}`,
-    category: type === "ANIME" ? "watch" : "read",
-    type: type === "ANIME" ? "anime" : "manga",
-    format: m.format, // TV, MOVIE, OVA, etc.
-    title: m.title.english || m.title.romaji || m.title.native,
-    slug: (m.title.english || m.title.romaji || m.title.native)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-"),
-    posterUrl: m.coverImage.large,
-    backdropUrl: m.bannerImage,
-    year: m.startDate.year,
-    creator: m.staff?.edges?.[0]?.node?.name?.full || m.studios?.nodes?.[0]?.name || "Unknown", 
-    description: m.description?.replace(/<[^>]*>?/gm, ""), 
-    genres: m.genres,
-    runtime: m.type === "ANIME" ? m.duration : m.chapters || m.volumes,
+  const data = await res.json();
+  
+  return data.data.Page.media.map((item: any) => ({
+    id: `anilist-${item.id}`,
+    title: item.title.english || item.title.romaji,
+    category: item.type === "ANIME" ? "watch" : "read",
+    type: item.type === "ANIME" ? "anime" : "manga",
+    format: item.format,
+    posterUrl: item.coverImage.large,
+    year: item.startDate.year,
   }));
 }
 
 export async function getAniListById(id: number) {
-  const detailQuery = `
+  const graphqlQuery = `
     query ($id: Int) {
       Media(id: $id) {
         id
         title {
-          english
           romaji
+          english
           native
         }
         type
         format
-        status
         description
         startDate {
           year
         }
         genres
-        averageScore
         coverImage {
-          large
+          extraLarge
         }
         bannerImage
+        averageScore
         episodes
         chapters
         volumes
-        duration
         studios(isMain: true) {
           nodes {
             name
-          }
-        }
-        staff(perPage: 10) {
-          edges {
-            role
-            node {
-              name {
-                full
-              }
-            }
           }
         }
       }
     }
   `;
 
-  const data = await safeAniListFetch(detailQuery, { id });
-  const m = data?.Media;
-  if (!m) return null;
+  const res = await fetch(ANILIST_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      query: graphqlQuery,
+      variables: { id },
+    }),
+  });
 
-  const type = m.type === "ANIME" ? "anime" : "manga";
-  
-  const creator = m.staff?.edges?.find((e: any) => 
-    e.role.toLowerCase().includes("director") || 
-    e.role.toLowerCase().includes("author") || 
-    e.role.toLowerCase().includes("original story")
-  )?.node?.name?.full 
-    || m.studios?.nodes?.[0]?.name 
-    || "Unknown Creator";
+  const data = await res.json();
+  const item = data.data.Media;
 
   return {
-    id: `anilist-${m.id}`,
-    category: m.type === "ANIME" ? "watch" : "read",
-    type,
-    title: m.title.english || m.title.romaji || m.title.native,
-    slug: (m.title.english || m.title.romaji || m.title.native)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-"),
-    posterUrl: m.coverImage.large,
-    backdropUrl: m.bannerImage,
-    year: m.startDate.year,
-    releaseYear: m.startDate.year,
-    creator,
-    description: m.description?.replace(/<[^>]*>?/gm, ""),
-    genres: m.genres,
-    runtime: m.type === "ANIME" ? m.duration : m.chapters || m.volumes,
-    episodes: m.episodes,
-    chapters: m.chapters,
-    volumes: m.volumes,
+    id: `anilist-${item.id}`,
+    title: item.title.english || item.title.romaji,
+    category: item.type === "ANIME" ? "watch" : "read",
+    type: item.type === "ANIME" ? "anime" : "manga",
+    format: item.format,
+    posterUrl: item.coverImage.extraLarge,
+    backdropUrl: item.bannerImage,
+    year: item.startDate.year,
+    releaseYear: item.startDate.year,
+    creator: item.studios.nodes[0]?.name,
+    genres: item.genres,
+    description: item.description,
+    runtime: item.episodes, // We use episodes as "runtime" for anime count
+    pageCount: item.chapters || item.volumes,
+    languageCode: "ja", // Anime is primarily Japanese
   };
 }

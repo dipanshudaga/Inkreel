@@ -1,74 +1,45 @@
-import { 
-  pgTable, 
-  text, 
-  integer, 
-  real,
-  timestamp,
-  uuid
-} from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
+import { pgTable, text, integer, timestamp, uuid } from "drizzle-orm/pg-core";
 
+// 1. User Identity
 export const users = pgTable("users", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  name: text("name"),
-  image: text("image"),
+  id: uuid("id").primaryKey().defaultRandom(),
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// 2. Media Archive (The Final Truth)
 export const media = pgTable("media", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  type: text("type").notNull(), // 'movie', 'tv', 'anime', 'book', 'manga'
-  category: text("category"), // compatible with older version
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  externalId: text("external_id").notNull(),
   
-  // External API linkage
-  externalId: text("external_id").notNull(), // TMDB ID, AniList ID, or OpenLibrary ID
-  
-  // Cached Metadata (to show in grids without re-fetching)
+  // Basic Metadata
   title: text("title").notNull(),
-  slug: text("slug"),
+  tagline: text("tagline"), // For Movies/TV
+  subtitle: text("subtitle"), // For Books
+  
+  // Categorization
+  category: text("category").notNull(), // "watch" | "read"
+  type: text("type").notNull(), // "movie", "anime", "book", etc.
+  format: text("format"), // "OVA", "Miniseries", "TV Series", etc.
+  
+  // Credits & Stats
+  creator: text("creator"), // Director or Author
+  genres: text("genres"),
+  language: text("language"), // Original Language name
+  releaseYear: integer("release_year"),
+  runtime: integer("runtime"), // In minutes
+  pageCount: integer("page_count"),
+  
+  // Imagery
   posterUrl: text("poster_url"),
   backdropUrl: text("backdrop_url"),
-  releaseYear: integer("release_year"),
-  year: integer("year"), // compatible with older version
-  creator: text("creator"), // Director or Author
+  blurDataUrl: text("blur_data_url"),
+  
+  // Description
   description: text("description"),
-  runtime: integer("runtime"), // duration in minutes or pages
-  genres: text("genres"), // comma separated
-
-  // Tracking state for this user
-  status: text("status").notNull().default('plan_to_watch'), 
-  rating: real("rating"), // 0.5 to 5.0
-  reviewText: text("review_text"),
   
-  startedAt: text("started_at"), // ISO date string
-  completedAt: text("completed_at"), // ISO date string
-
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  // Final State
+  status: text("status").notNull(), // "watchlist", "shelf", "completed", "loved"
 });
-
-// Logs for tracking individual sessions or rewatches/rereads
-export const logs = pgTable("logs", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  mediaId: uuid("media_id").references(() => media.id).notNull(),
-  
-  date: text("date").notNull(), // ISO date string
-  action: text("action").notNull(), // 'watched_episode', 'read_pages', 'rewatched', 'finished'
-  progress: integer("progress"), // e.g. Episode 4, Page 120
-  notes: text("notes"),
-
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const mediaRelations = relations(media, ({ many }) => ({
-  logs: many(logs),
-}));
-
-export const logsRelations = relations(logs, ({ one }) => ({
-  media: one(media, {
-    fields: [logs.mediaId],
-    references: [media.id],
-  }),
-}));
