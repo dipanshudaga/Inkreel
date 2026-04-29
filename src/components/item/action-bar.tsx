@@ -28,7 +28,9 @@ export function ActionBar({
   const storeItem = useMediaStore((state) => state.items[mediaId]);
   const updateStoreItem = useMediaStore((state) => state.updateItem);
   
-  const [isExternal, setIsExternal] = useState(initialIsExternal);
+  const [isExternal, setIsExternal] = useState(
+    initialIsExternal ?? !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(mediaId)
+  );
   const [loading, setLoading] = useState<string | null>(null);
 
   // Use store value if available, otherwise fallback to prop
@@ -45,7 +47,6 @@ export function ActionBar({
     }
     
     if (loading) return;
-    setLoading(action);
 
     try {
       let nextStatus: string | null = null;
@@ -59,26 +60,40 @@ export function ActionBar({
         nextStatus = isLoved ? "completed" : "loved";
       }
 
+      // 1. Instant Optimistic Update for immediate feedback
+      updateStoreItem(mediaId, nextStatus, category);
+
       if (isExternal) {
-        const res = await saveMediaAction(mediaId, nextStatus || "watchlist");
-        if (res.success) {
-          if (res.id) {
-            updateStoreItem(res.id, nextStatus, null);
-          }
+        setLoading(action);
+        // 2. Perform save in background
+        const res = await saveMediaAction({ 
+          ...item, 
+          id: mediaId, 
+          status: nextStatus || "watchlist" 
+        });
+
+        if (res.success && res.id) {
+          // Sync store with the new UUID
+          updateStoreItem(res.id, nextStatus, category);
           setIsExternal(false);
-          router.refresh();
-          if (res.id) router.push(`/items/${res.id}`);
+          
+          // 3. Only redirect if we're on the specific item's detail page
+          // This avoids jarring navigation if clicking from the dashboard
+          if (typeof window !== "undefined" && window.location.pathname.includes(encodeURIComponent(mediaId))) {
+            router.push(`/items/${res.id}`);
+          }
         }
+        setLoading(null);
       } else {
-        // Optimistic Update
-        updateStoreItem(mediaId, nextStatus, null);
-        await updateMediaAction(mediaId, nextStatus || "none");
-        router.refresh();
+        // Background sync for existing items
+        updateMediaAction(mediaId, nextStatus || "none").then(() => {
+          router.refresh();
+        });
       }
     } catch (err) {
       console.error("Action failed:", err);
-      updateStoreItem(mediaId, initialStatus, null);
-    } finally {
+      // Rollback on error
+      updateStoreItem(mediaId, status, null);
       setLoading(null);
     }
   };
@@ -87,10 +102,13 @@ export function ActionBar({
 
   const Button = ({ action, active, icon: Icon, label, color = "dark" }: any) => (
     <button
-      onClick={() => handleAction(action)}
-      disabled={!!loading}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        handleAction(action);
+      }}
       className={cn(
-        "flex flex-col items-center gap-2 group transition-all disabled:opacity-50 cursor-pointer",
+        "flex flex-col items-center gap-2 group transition-all cursor-pointer",
         active ? "opacity-100" : "opacity-30 hover:opacity-100",
         active && color === "accent" && "text-traced-accent"
       )}
@@ -98,7 +116,7 @@ export function ActionBar({
       <div className={cn(
         "size-14 flex items-center justify-center border border-black/10 transition-all duration-300",
         active 
-          ? (color === "accent" ? "bg-traced-accent text-white border-traced-accent" : "bg-black text-white border-black") 
+          ? (color === "accent" ? "bg-traced-accent text-white border-traced-accent shadow-lg scale-105" : "bg-black text-white border-black scale-105") 
           : "bg-transparent hover:border-black"
       )}>
         {loading === action ? (
@@ -115,19 +133,19 @@ export function ActionBar({
     return (
       <div className="flex border-hairline border-t-0 divide-x divide-traced-dark h-9 bg-traced-bg w-full">
         <button
-          onClick={() => handleAction("completed")}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("completed"); }}
           className={cn("flex-1 flex items-center justify-center transition-colors", isCompleted ? "bg-black text-white" : "text-traced-gray hover:bg-black/5")}
         >
           {loading === "completed" ? <Loader2 size={14} className="animate-spin" /> : (isRead ? <Check size={16} /> : <Eye size={16} />)}
         </button>
         <button
-          onClick={() => handleAction("planned")}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("planned"); }}
           className={cn("flex-1 flex items-center justify-center transition-colors", isPlanned ? "bg-black text-white" : "text-traced-gray hover:bg-black/5")}
         >
           {loading === "planned" ? <Loader2 size={14} className="animate-spin" /> : <Bookmark size={16} />}
         </button>
         <button
-          onClick={() => handleAction("loved")}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("loved"); }}
           className={cn("flex-1 flex items-center justify-center transition-colors", isLoved ? "bg-traced-accent text-white" : "text-traced-gray hover:bg-black/5")}
         >
           {loading === "loved" ? <Loader2 size={14} className="animate-spin" /> : <Heart size={16} fill={isLoved ? "currentColor" : "none"} />}

@@ -1,0 +1,57 @@
+{
+  "colors": {
+    "traced-bg": {
+      "value": "#F7F5F0",
+      "type": "color",
+      "description": "Swiss Grid background - Warm newsprint off-white"
+    },
+    "traced-surface": {
+      "value": "#EBE8DE",
+      "type": "color",
+      "description": "Secondary surface - Hover states and structural blocks"
+    },
+    "traced-dark": {
+      "value": "#1A1A1A",
+      "type": "color",
+      "description": "Primary text / borders - High-contrast black"
+    },
+    "traced-gray": {
+      "value": "#666666",
+      "type": "color",
+      "description": "Secondary text - Metadata and timestamps"
+    },
+    "traced-accent": {
+      "value": "#DE3C26",
+      "type": "color",
+      "description": "Archive Vermilion - Primary CTAs and active indicators"
+    }
+  },
+  "typography": {
+    "editorial": {
+      "fontFamily": { "value": "Newsreader", "type": "fontFamily" },
+      "fontWeight": { "value": "500", "type": "fontWeight" },
+      "lineHeight": { "value": "1.2", "type": "lineHeight" },
+      "fontSize": { "value": "48", "type": "fontSize" },
+      "letterSpacing": { "value": "-0.02em", "type": "letterSpacing" }
+    },
+    "body": {
+      "fontFamily": { "value": "Newsreader", "type": "fontFamily" },
+      "fontWeight": { "value": "400", "type": "fontWeight" },
+      "lineHeight": { "value": "1.6", "type": "lineHeight" },
+      "fontSize": { "value": "18", "type": "fontSize" }
+    },
+    "ui": {
+      "fontFamily": { "value": "Space Grotesk", "type": "fontFamily" },
+      "fontWeight": { "value": "500", "type": "fontWeight" },
+      "fontSize": { "value": "12", "type": "fontSize" },
+      "letterSpacing": { "value": "0.05em", "type": "letterSpacing" },
+      "textTransform": { "value": "uppercase", "type": "textCase" }
+    }
+  },
+  "spacing": {
+    "hairline": { "value": "1", "type": "spacing" }
+  },
+  "borderWidth": {
+    "hairline": { "value": "1", "type": "borderWidth" }
+  }
+}

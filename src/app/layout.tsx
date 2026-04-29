@@ -5,12 +5,8 @@ if (typeof dns.setDefaultResultOrder === "function") {
   dns.setDefaultResultOrder("ipv4first");
 }
 import "./globals.css";
-import { SearchModal } from "@/components/layout/search-modal";
-import { Agentation } from "agentation";
-import { Providers } from "@/components/layout/providers";
 import { Suspense } from "react";
-import { LayoutContent } from "@/components/layout/layout-content";
-import { auth } from "@/lib/auth";
+import { RootContent } from "@/components/layout/root-content";
 
 const newsreader = Newsreader({
   subsets: ["latin"],
@@ -31,28 +27,30 @@ export const metadata = {
   manifest: "/manifest.json",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch session on the server to prevent hydration mismatch in LayoutContent
-  const session = await auth();
-
   return (
     <html
       lang="en"
       className={`${newsreader.variable} ${spaceGrotesk.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex font-sans selection:bg-traced-dark selection:text-traced-bg">
-        <Providers session={session}>
-          <LayoutContent serverSession={session}>
+      <body 
+        className="min-h-full flex font-sans selection:bg-traced-dark selection:text-traced-bg"
+        suppressHydrationWarning
+      >
+        {/* 
+          In Next.js 16, wrapping dynamic server components in Suspense 
+          at the root prevents "Blocking Route" warnings and improves TBT.
+        */}
+        <Suspense fallback={<div className="flex-1 bg-traced-bg animate-pulse" />}>
+          <RootContent>
             {children}
-          </LayoutContent>
-          <SearchModal />
-          <Agentation />
-        </Providers>
+          </RootContent>
+        </Suspense>
       </body>
     </html>
   );

@@ -78,7 +78,7 @@ export function SearchModal() {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search your archive or add new..."
+            placeholder="Search your diary or add new..."
             className="grow bg-transparent border-none outline-none text-traced-dark font-serif italic text-[32px] placeholder:text-traced-gray/30"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

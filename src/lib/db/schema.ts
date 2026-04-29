@@ -40,6 +40,9 @@ export const media = pgTable("media", {
   // Description
   description: text("description"),
   
-  // Final State
+  // Status
   status: text("status").notNull(), // "watchlist", "shelf", "completed", "loved"
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

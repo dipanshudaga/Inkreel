@@ -47,21 +47,25 @@
   }
 }
 
+@utility border-hairline {
+  border: 1px solid var(--color-traced-dark);
+}
+
+@utility border-b-hairline {
+  border-bottom: 1px solid var(--color-traced-dark);
+}
+
+@utility border-r-hairline {
+  border-right: 1px solid var(--color-traced-dark);
+}
+
+@utility border-t-hairline {
+  border-top: 1px solid var(--color-traced-dark);
+}
+
 @layer components {
   .traced-container {
     @apply w-full max-w-[1440px] mx-auto;
-  }
-  
-  .border-hairline {
-    @apply border border-[#1A1A1A];
-  }
-  
-  .border-b-hairline {
-    @apply border-b border-[#1A1A1A];
-  }
-
-  .border-r-hairline {
-    @apply border-r border-[#1A1A1A];
   }
 
   /* Global Button styles */

@@ -8,7 +8,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full flex flex-col gap-10">
         <header className="text-center">
           <h1 className="text-[48px] font-serif italic text-[#1A1A1A] leading-none mb-4">
-            Inkreel Archive
+            Inkreel.
           </h1>
           <p className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-[#737373]">
             Your Personal Media Diary

@@ -39,8 +39,10 @@ async function enrichItem(item: any) {
       // Map language code to name for display
       let languageName = item.language;
       try {
-        if (freshData.languageCode && !item.language) {
-          languageName = languageNames.of(freshData.languageCode) || item.language;
+        const code = freshData.languageCode || item.languageCode;
+        if (code && code.length === 2) {
+          const resolved = languageNames.of(code);
+          if (resolved) languageName = resolved;
         }
       } catch (e) {}
 
@@ -74,10 +76,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
   if (isUUID) {
-    // If not logged in, redirect to login for private items
-    if (!session) {
-      redirect("/login");
-    }
+    if (!session) redirect("/login");
 
     const localItem = await db.query.media.findFirst({
       where: and(eq(media.id, id), eq(media.userId, session.user.id)),
@@ -87,26 +86,27 @@ export default async function ItemPage({ params }: ItemPageProps) {
     }
   }
 
-  // If not found in DB, try fetching as external
   if (!item) {
-    if (id.startsWith("tmdb-movie-")) {
-      item = await getMovieById(id.replace("tmdb-movie-", ""));
-      isExternal = true;
-    } else if (id.startsWith("tmdb-tv-")) {
-      item = await getTVById(id.replace("tmdb-tv-", ""));
-      isExternal = true;
-    } else if (id.startsWith("gb-")) {
-      item = await getBookById(id.replace("gb-", ""));
-      isExternal = true;
-    } else if (id.startsWith("anilist-")) {
-      item = await getAniListById(parseInt(id.replace("anilist-", ""), 10));
-      isExternal = true;
+    try {
+      if (id.startsWith("tmdb-movie-")) {
+        item = await getMovieById(id.replace("tmdb-movie-", ""));
+        isExternal = true;
+      } else if (id.startsWith("tmdb-tv-")) {
+        item = await getTVById(id.replace("tmdb-tv-", ""));
+        isExternal = true;
+      } else if (id.startsWith("gb-")) {
+        item = await getBookById(id.replace("gb-", ""));
+        isExternal = true;
+      } else if (id.startsWith("anilist-")) {
+        item = await getAniListById(parseInt(id.replace("anilist-", ""), 10));
+        isExternal = true;
+      }
+    } catch (err) {
+      console.error("External item fetch failed:", err);
     }
   }
 
-  if (!item) {
-    notFound();
-  }
+  if (!item) notFound();
 
   const genresArray = (Array.isArray(item.genres) ? item.genres : (item.genres?.split(", ") || [])).slice(0, 4);
   const displayCreator = item.creator && !item.creator.toLowerCase().includes("unknown");
@@ -128,7 +128,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
           </>
         ) : (
           <div className="size-full bg-traced-surface flex items-center justify-center">
-             <div className="text-[120px] font-serif italic opacity-[0.03] select-none pointer-events-none">INKREEL</div>
+             <div className="text-[120px] font-serif italic opacity-[0.03] select-none pointer-events-none">INKREEL.</div>
           </div>
         )}
       </div>
@@ -137,32 +137,61 @@ export default async function ItemPage({ params }: ItemPageProps) {
         <div className="flex flex-col lg:flex-row gap-16">
           
           {/* Poster Column */}
-          <aside className="w-72 flex-shrink-0">
-            <div className="aspect-[2/3] border-hairline bg-traced-surface overflow-hidden shadow-2xl transition-transform hover:scale-[1.02] duration-500">
+          <aside className="w-72 flex-shrink-0 flex flex-col gap-10">
+            <div className="relative aspect-[2/3] border-hairline bg-traced-surface overflow-hidden shadow-2xl transition-all duration-700 hover:scale-[1.02] group/poster">
               {item.posterUrl ? (
-                <img src={item.posterUrl} alt={item.title} className="size-full object-cover" />
+                <img src={item.posterUrl} alt={item.title} className="size-full object-cover transition-transform duration-1000 group-hover/poster:scale-105" />
               ) : (
-                <div className="size-full flex items-center justify-center text-[10px] uppercase tracking-widest opacity-30 font-bold">No Art</div>
+                <div className="size-full flex items-center justify-center text-[10px] uppercase tracking-widest opacity-10 font-bold">No Art</div>
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/poster:opacity-100 transition-opacity duration-700" />
+            </div>
+
+            {/* Metadata moved below poster */}
+            <div className="flex flex-col gap-8 py-8 border-t border-traced-dark/10">
+              <div className="flex flex-col gap-1 pl-4">
+                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">Format</span>
+                <span className="font-serif italic text-lg">{item.format || item.type || "Standard"}</span>
+              </div>
+              <div className="flex flex-col gap-1 pl-4">
+                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">Language</span>
+                <span className="font-serif italic text-lg">{item.language || "Native"}</span>
+              </div>
+              <div className="flex flex-col gap-1 pl-4">
+                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">Genre</span>
+                <div className="flex flex-wrap gap-1 font-serif italic text-lg">
+                  {genresArray.filter((g: string) => g).map((genre: string, idx: number) => (
+                    <span key={genre}>{genre}{idx < genresArray.length - 1 ? "," : ""}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 pl-4">
+                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">
+                  {item.category === 'read' ? 'Quantity' : 'Duration'}
+                </span>
+                <span className="font-serif italic text-lg">
+                  {item.category === 'read' 
+                    ? `${item.pageCount || "—"} Pages` 
+                    : `${item.runtime || "—"} Minutes`}
+                </span>
+              </div>
             </div>
           </aside>
 
           {/* Content Column */}
           <main className="flex-1 flex flex-col pt-40">
-            <header className="mb-14">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] px-2 py-1 bg-traced-dark text-traced-bg">
-                  {item.format || item.type}
-                </span>
-                <span className="font-serif italic text-2xl opacity-40">{item.releaseYear || "N/A"}</span>
+            <header className="mb-14 flex flex-col gap-2">
+              <div className="flex items-center gap-4 mb-2">
+                <span className="font-serif italic text-2xl opacity-30">{item.releaseYear || "N/A"}</span>
+                <div className="h-px grow bg-traced-dark/10" />
               </div>
               
-              <h1 className="text-5xl lg:text-7xl font-serif font-medium italic tracking-[-0.05em] leading-[0.85] m-0 mb-3">
+              <h1 className="text-4xl lg:text-5xl font-serif font-medium italic tracking-[-0.05em] leading-[0.9] m-0 mb-3">
                 {item.title}
               </h1>
               
               {(item.tagline || item.subtitle) && (
-                <p className="text-2xl lg:text-3xl font-serif italic opacity-50 tracking-[-0.02em] leading-tight">
+                <p className="text-lg lg:text-xl font-serif italic opacity-50 tracking-[-0.02em] leading-tight">
                   {item.tagline || item.subtitle}
                 </p>
               )}
@@ -170,7 +199,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
               {displayCreator && (
                 <div className="mt-8 flex items-baseline gap-2">
                   <span className="text-[9px] font-sans font-bold uppercase tracking-widest opacity-30">
-                    {item.category === 'read' ? 'Authored by' : 'Visualized by'}
+                    {item.category === 'read' ? 'Written by' : 'Directed by'}
                   </span>
                   <span className="font-serif text-2xl italic opacity-80">{item.creator}</span>
                 </div>
@@ -180,37 +209,9 @@ export default async function ItemPage({ params }: ItemPageProps) {
             <section className="mb-16">
               <span className="block text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray mb-6 border-b border-traced-dark pb-2 w-fit">Synopsis</span>
               <p className="text-xl font-serif leading-relaxed max-w-2xl opacity-90 first-letter:text-5xl first-letter:font-serif first-letter:float-left first-letter:mr-3 first-letter:mt-1">
-                {item.description?.replace(/<[^>]*>?/gm, '') || "In the vast expanse of the archive, this particular narrative remains partially veiled."}
+                {item.description?.replace(/<[^>]*>?/gm, '') || "In the vast expanse of the diary, this particular narrative remains partially veiled."}
               </p>
             </section>
-
-            {/* 3-Column Metadata Grid */}
-            <div className="grid grid-cols-3 gap-8 py-10 border-t border-traced-dark/20">
-              <div className="flex flex-col gap-2">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">Language</span>
-                <span className="font-serif italic text-xl">{item.language || "Native"}</span>
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">Composition</span>
-                <div className="flex flex-wrap gap-1 font-serif italic text-xl">
-                  {genresArray.filter((g: string) => g).map((genre: string, idx: number) => (
-                    <span key={genre}>{genre}{idx < genresArray.length - 1 ? "," : ""}</span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">
-                  {item.category === 'read' ? 'Quantity' : 'Duration'}
-                </span>
-                <span className="font-serif italic text-xl">
-                  {item.category === 'read' 
-                    ? `${item.pageCount || "—"} Pages` 
-                    : `${item.runtime || "—"} Minutes`}
-                </span>
-              </div>
-            </div>
           </main>
 
           {/* Action Sidebar */}

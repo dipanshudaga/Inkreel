@@ -2,114 +2,165 @@
 
 import { db } from "@/lib/db";
 import { media } from "@/lib/db/schema";
+import { auth } from "@/lib/auth";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
-import { getMovieById, getTVById } from "@/lib/api/tmdb";
-import { getBookById } from "@/lib/api/google-books";
-import { getAniListById } from "@/lib/api/anilist";
+import { searchMovies } from "@/lib/api/tmdb";
+import { searchBooks } from "@/lib/api/google-books";
 
-const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
+export async function saveMediaAction(item: any) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false };
 
-export async function saveMediaAction(externalId: string, status: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error("Unauthorized");
-
-    // 1. Fetch full details
-    let itemData: any = null;
-    if (externalId.startsWith("tmdb-movie-")) {
-      itemData = await getMovieById(externalId.replace("tmdb-movie-", ""));
-    } else if (externalId.startsWith("tmdb-tv-")) {
-      itemData = await getTVById(externalId.replace("tmdb-tv-", ""));
-    } else if (externalId.startsWith("gb-")) {
-      itemData = await getBookById(externalId.replace("gb-", ""));
-    } else if (externalId.startsWith("anilist-")) {
-      itemData = await getAniListById(parseInt(externalId.replace("anilist-", ""), 10));
-    }
-
-    if (!itemData) throw new Error("Could not fetch media data");
-
-    // 2. Map language code to name
-    let languageName = "Unknown";
-    try {
-      if (itemData.languageCode) {
-        languageName = languageNames.of(itemData.languageCode) || "Unknown";
-      }
-    } catch (e) {}
-
-    // 3. Status mapping
-    let dbStatus = status;
-    if (status === "watched" || status === "read") dbStatus = "completed";
-    if (status === "love") dbStatus = "loved";
-    if (status === "watchlist" && itemData.category === "read") dbStatus = "shelf";
-
-    // 4. Insert into DB
-    const [newMedia] = await db.insert(media).values({
+    const [inserted] = await db.insert(media).values({
       userId: session.user.id,
-      externalId: externalId,
-      title: itemData.title,
-      tagline: itemData.tagline,
-      subtitle: itemData.subtitle,
-      category: itemData.category,
-      type: itemData.type,
-      format: itemData.format,
-      creator: itemData.creator,
-      genres: Array.isArray(itemData.genres) ? itemData.genres.join(", ") : (itemData.genres || ""),
-      language: languageName,
-      releaseYear: itemData.releaseYear || itemData.year,
-      runtime: itemData.runtime,
-      pageCount: itemData.pageCount,
-      posterUrl: itemData.posterUrl,
-      backdropUrl: itemData.backdropUrl,
-      description: itemData.description,
-      status: dbStatus,
-    }).returning();
-
-    revalidatePath("/", "layout");
-    return { success: true, id: newMedia.id };
-  } catch (error) {
-    console.error("Save media failed:", error);
-    return { success: false, error: "Failed to save to archive" };
-  }
-}
-
-export async function updateMediaAction(id: string, status: string) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error("Unauthorized");
-
-    // Status mapping
-    let dbStatus = status;
-    if (status === "watched" || status === "read") dbStatus = "completed";
-    if (status === "love") dbStatus = "loved";
-    // We don't handle "watchlist" vs "shelf" here because we don't know the category easily without fetching
-    // But updateAction usually receives the correct string from the UI
+      title: item.title,
+      category: item.category || (item.type === 'book' || item.type === 'manga' ? 'read' : 'watch'),
+      status: item.status || "watchlist",
+      type: item.type || (item.category === 'read' ? 'book' : 'movie'),
+      externalId: item.externalId || item.id,
+      posterUrl: item.posterUrl,
+      releaseYear: typeof item.year === 'string' ? parseInt(item.year) : (item.year || item.releaseYear),
+    }).returning({ id: media.id });
     
-    await db.update(media)
-      .set({ status: dbStatus })
-      .where(and(eq(media.id, id), eq(media.userId, session.user.id)));
-
-    revalidatePath("/", "layout");
-    return { success: true };
+    revalidatePath("/watch");
+    revalidatePath("/read");
+    return { success: true, id: inserted.id };
   } catch (error) {
-    console.error("Update media failed:", error);
-    return { success: false, error: "Failed to update archive" };
+    console.error("Failed to save media:", error);
+    return { success: false };
   }
 }
 
-export async function deleteMediaAction(id: string) {
+export async function updateMediaAction(externalId: string, status: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false };
+
   try {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error("Unauthorized");
-
-    await db.delete(media)
-      .where(and(eq(media.id, id), eq(media.userId, session.user.id)));
-
-    revalidatePath("/", "layout");
+    if (status === "none") {
+      await db.delete(media).where(
+        and(
+          eq(media.userId, session.user.id),
+          eq(media.externalId, externalId)
+        )
+      );
+    } else {
+      await db.update(media)
+        .set({ status })
+        .where(
+          and(
+            eq(media.userId, session.user.id),
+            eq(media.externalId, externalId)
+          )
+        );
+    }
+    
+    revalidatePath("/watch");
+    revalidatePath("/read");
     return { success: true };
   } catch (error) {
-    console.error("Delete media failed:", error);
-    return { success: false, error: "Failed to delete" };
+    console.error("Failed to update media:", error);
+    return { success: false };
+  }
+}
+
+export async function saveImportedMediaAction(items: any[]) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false };
+
+  try {
+    const values = items.map(item => ({
+      userId: session.user.id,
+      title: item.title,
+      category: item.category,
+      status: item.status,
+      externalId: item.externalId,
+      posterUrl: item.posterUrl,
+      releaseYear: item.year,
+    }));
+
+    await db.insert(media).values(values).onConflictDoNothing();
+    
+    revalidatePath("/watch");
+    revalidatePath("/read");
+    revalidatePath("/import");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to save imported media:", error);
+    return { success: false };
+  }
+}
+
+export async function getUserMediaAction() {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, items: {} };
+
+  try {
+    const userMedia = await db
+      .select()
+      .from(media)
+      .where(eq(media.userId, session.user.id));
+    const items = userMedia.map(m => ({
+      id: m.id,
+      externalId: m.externalId,
+      title: m.title,
+      category: m.category,
+      status: m.status,
+      posterUrl: m.posterUrl,
+      year: m.releaseYear
+    }));
+    
+    return { success: true, items };
+  } catch (error) {
+    console.error("Failed to get user media:", error);
+    return { success: false, items: {} };
+  }
+}
+
+export async function searchMediaAction(query: string, category: "watch" | "read") {
+  try {
+    if (category === "watch") {
+      const results = await searchMovies(query);
+      return { success: true, results };
+    } else if (category === "read") {
+      const results = await searchBooks(query);
+      return { success: true, results };
+    }
+    return { success: true, results: [] };
+  } catch (error) {
+    console.error("Search media action failed:", error);
+    return { success: false, results: [] };
+  }
+}
+
+export async function batchSearchMediaAction(queries: { query: string; category: "watch" | "read" }[]) {
+  try {
+    const resultsSettled = await Promise.allSettled(
+      queries.map(async (q) => {
+        if (q.category === "watch") {
+          // Pass 1: Primary search (usually Title + Year)
+          let movies = await searchMovies(q.query);
+          
+          // Pass 2: Fallback to Title only if Pass 1 failed
+          if (movies.length === 0 && q.query.match(/\d{4}$/)) {
+            const titleOnly = q.query.replace(/\s\d{4}$/, "");
+            movies = await searchMovies(titleOnly);
+          }
+          
+          return movies[0] || null;
+        } else if (q.category === "read") {
+          const books = await searchBooks(q.query);
+          return books[0] || null;
+        }
+        return null;
+      })
+    );
+
+    const results = resultsSettled.map((res) => (res.status === "fulfilled" ? res.value : null));
+    return { success: true, results };
+  } catch (error) {
+    console.error("Batch search failed:", error);
+    return { success: false, results: [] };
   }
 }

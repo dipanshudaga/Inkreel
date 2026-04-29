@@ -1,44 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { Search, LogOut, User } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { Search } from "lucide-react";
+import { useSearchParams, usePathname } from "next/navigation";
 import { useSearchStore } from "@/store/use-search-store";
-import { useSession, signOut } from "next-auth/react";
+import { useMediaStore } from "@/store/use-media-store";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { getUserMediaAction } from "@/lib/actions/media";
 
 export function Sidebar() {
   const { open } = useSearchStore();
   const { data: session } = useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const storeItems = useMediaStore((state) => state.items);
+  const setItems = useMediaStore((state) => state.setItems);
 
-  const [counts, setCounts] = useState({ watch: 0, read: 0 });
-
+  // Sync store from server on mount
   useEffect(() => {
     if (session) {
-      fetch("/api/media/counts")
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch counts");
-          return res.json();
-        })
-        .then((data) => setCounts(data))
-        .catch((err) => console.error("Sidebar counts fetch failed:", err));
+      getUserMediaAction().then(res => {
+        if (res.success) setItems(res.items);
+      });
     }
-  }, [session]);
+  }, [session, setItems]);
+
+  // Reactive counts from the store
+  const counts = useMemo(() => {
+    const values = Object.values(storeItems);
+    return {
+      watch: values.filter(v => v.category === 'watch' && v.status && v.status !== "none").length,
+      read: values.filter(v => v.category === 'read' && v.status && v.status !== "none").length
+    };
+  }, [storeItems]);
 
   const activeCat = searchParams.get('cat') || (pathname.startsWith('/watch') ? 'watch' : pathname.startsWith('/read') ? 'read' : null);
 
   return (
     <aside className="flex flex-col shrink-0 h-full w-[288px] border-r-hairline bg-traced-bg fixed top-0 left-0 z-50">
-      {/* Branding */}
-      <div className="flex flex-col py-8 px-6 gap-12 border-b-hairline">
+      {/* Balanced Header: Logo */}
+      <div className="flex items-center justify-between py-10 px-6 border-b-hairline bg-white/50">
         <Link href="/" className="tracking-[-0.02em] text-traced-dark font-serif font-medium italic text-4xl">
           Inkreel.
         </Link>
       </div>
 
-      <div className="flex flex-col grow">
+      <div className="flex flex-col grow overflow-y-auto">
         {/* Diaries Section */}
         <div className="flex flex-col border-b-hairline">
           <Link href="/watch" className={`items-center flex justify-between py-4 px-6 transition-colors cursor-pointer text-left ${activeCat === 'watch' ? 'bg-traced-accent text-white' : 'hover:bg-black/5'}`}>
@@ -67,7 +76,7 @@ export function Sidebar() {
           >
             <Search size={16} className="text-[#737373] group-hover:text-traced-dark transition-colors" strokeWidth={2} />
             <span className="tracking-[0.05em] uppercase text-[#737373] group-hover:text-traced-dark font-sans font-medium text-sm transition-colors">
-              Search Archive
+              Search
             </span>
             <kbd className="ml-auto inline-flex items-center py-0.5 px-1.5 border-hairline tracking-[0.05em] uppercase text-[#737373]/50 font-sans font-medium text-[9px]">
               ⌘K
@@ -75,36 +84,25 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* Bottom Section */}
+        {/* Bottom Section: Import + Profile */}
         <div className="flex flex-col mt-auto">
-          {session ? (
-            <div className="flex flex-col border-t-hairline bg-traced-surface/30">
-              <div className="px-6 py-4 flex items-center gap-3">
-                <div className="size-8 rounded-full bg-traced-dark flex items-center justify-center text-traced-bg">
-                  <User size={16} />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-traced-dark truncate max-w-[150px]">
-                    {session.user?.name}
-                  </span>
-                  <span className="text-[9px] font-serif italic text-traced-gray">Archivist</span>
-                </div>
-                <button 
-                  onClick={() => signOut()}
-                  className="ml-auto p-2 hover:text-traced-accent transition-colors"
-                  title="Sign Out"
-                >
-                  <LogOut size={16} />
-                </button>
+          <Link href="/import" className={`items-center flex py-4 px-6 gap-3 transition-colors cursor-pointer group border-t-hairline border-b-hairline ${pathname === '/import' ? 'bg-traced-accent text-white' : 'hover:bg-black/5'}`}>
+            <span className={`tracking-[0.05em] uppercase font-sans font-semibold text-sm ${pathname === '/import' ? 'text-white' : 'text-[#737373] group-hover:text-traced-dark'}`}>
+              Import
+            </span>
+          </Link>
+
+          {session && (
+            <Link href="/account" className={`flex items-center gap-4 py-6 px-6 transition-colors cursor-pointer group border-b-hairline ${pathname === '/account' ? 'bg-traced-accent text-white' : 'hover:bg-black/5'}`}>
+              <div className="size-8 rounded-full border border-black bg-white overflow-hidden shrink-0">
+                <img 
+                  src="/avatar.png" 
+                  alt="Profile" 
+                  className="size-full object-cover grayscale"
+                />
               </div>
-            </div>
-          ) : (
-            <Link 
-              href="/login"
-              className="items-center flex justify-between py-4 px-6 border-t-hairline hover:bg-black/5 transition-colors w-full cursor-pointer text-left"
-            >
-              <span className="tracking-[0.05em] uppercase text-traced-dark font-sans font-medium text-[13px]">
-                Sign In
+              <span className={`tracking-[0.05em] uppercase font-sans font-semibold text-xs truncate ${pathname === '/account' ? 'text-white' : 'text-[#737373] group-hover:text-traced-dark'}`}>
+                {session.user.name?.charAt(0).toUpperCase() + session.user.name?.slice(1)}
               </span>
             </Link>
           )}

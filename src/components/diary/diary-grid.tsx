@@ -16,10 +16,13 @@ export function DiaryGrid({ initialItems, currentFilter, category }: DiaryGridPr
   const filteredItems = initialItems.filter((item) => {
     const storeItem = storeItems[item.id];
     
-    if (currentFilter === "all") return true;
-
     // Use store data if available, otherwise fallback to item properties
     const status = storeItem ? storeItem.status : item.status;
+
+    // If item has no status (removed from diary), hide it
+    if (!status || status === "none") return false;
+
+    if (currentFilter === "all") return true;
 
     if (currentFilter === "watched" || currentFilter === "read") {
       return status === "completed" || status === "loved";
