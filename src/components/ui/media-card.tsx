@@ -73,7 +73,7 @@ export function MediaCard({
       </div>
 
       <div className="flex flex-col gap-0.5 mt-1.5">
-        <span className="font-bold text-[14px] text-vault-dark leading-tight truncate">
+        <span className="font-medium text-[14px] text-vault-dark leading-tight truncate">
           {title}
         </span>
         <span className="font-medium text-[12px] text-[#8A8A7A] truncate">

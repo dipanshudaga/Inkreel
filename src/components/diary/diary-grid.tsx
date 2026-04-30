@@ -41,13 +41,13 @@ export function DiaryGrid({ initialItems, currentFilter, category }: DiaryGridPr
     return (
       <div className="w-full py-32 text-center flex flex-col items-center gap-4">
         <p className="text-[#A1A19A] font-serif italic text-3xl">This shelf is currently empty.</p>
-        <p className="text-[#737373] font-sans text-xs uppercase tracking-widest font-semibold">Try adjusting your filters or adding new titles.</p>
+        <p className="text-[#737373] font-sans text-xs uppercase tracking-widest font-medium">Try adjusting your filters or adding new titles.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-8 gap-y-12">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12">
       {filteredItems.map((item) => (
         <MediaCard key={item.id} item={item} />
       ))}

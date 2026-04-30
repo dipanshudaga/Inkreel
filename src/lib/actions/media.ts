@@ -13,15 +13,21 @@ export async function saveMediaAction(item: any) {
   if (!session?.user?.id) return { success: false };
 
   try {
+    const now = new Date();
+    const status = item.status || "watchlist";
+    
     const [inserted] = await db.insert(media).values({
       userId: session.user.id,
       title: item.title,
       category: item.category || (item.type === 'book' || item.type === 'manga' ? 'read' : 'watch'),
-      status: item.status || "watchlist",
+      status: status,
       type: item.type || (item.category === 'read' ? 'book' : 'movie'),
       externalId: item.externalId || item.id,
       posterUrl: item.posterUrl,
       releaseYear: typeof item.year === 'string' ? parseInt(item.year) : (item.year || item.releaseYear),
+      watchlistedAt: (status === "watchlist" || status === "shelf") ? now : null,
+      completedAt: (status === "completed" || status === "loved") ? now : null,
+      favoritedAt: status === "loved" ? now : null,
     }).returning({ id: media.id });
     
     revalidatePath("/watch");
@@ -38,20 +44,36 @@ export async function updateMediaAction(externalId: string, status: string) {
   if (!session?.user?.id) return { success: false };
 
   try {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(externalId);
+    const identifier = isUuid ? media.id : media.externalId;
+
     if (status === "none") {
       await db.delete(media).where(
         and(
           eq(media.userId, session.user.id),
-          eq(media.externalId, externalId)
+          eq(identifier, externalId)
         )
       );
     } else {
+      const now = new Date();
+      const updateData: any = { status };
+      
+      if (status === "watchlist" || status === "shelf") {
+        updateData.watchlistedAt = now;
+      } else if (status === "completed" || status === "loved") {
+        updateData.completedAt = now;
+      }
+      
+      if (status === "loved") {
+        updateData.favoritedAt = now;
+      }
+
       await db.update(media)
-        .set({ status })
+        .set(updateData)
         .where(
           and(
             eq(media.userId, session.user.id),
-            eq(media.externalId, externalId)
+            eq(identifier, externalId)
           )
         );
     }
@@ -70,6 +92,7 @@ export async function saveImportedMediaAction(items: any[]) {
   if (!session?.user?.id) return { success: false };
 
   try {
+    const now = new Date();
     const values = items.map(item => ({
       userId: session.user.id,
       title: item.title,
@@ -78,6 +101,9 @@ export async function saveImportedMediaAction(items: any[]) {
       externalId: item.externalId,
       posterUrl: item.posterUrl,
       releaseYear: item.year,
+      watchlistedAt: (item.status === "watchlist" || item.status === "shelf") ? now : null,
+      completedAt: (item.status === "completed" || item.status === "loved") ? now : null,
+      favoritedAt: item.status === "loved" ? now : null,
     }));
 
     await db.insert(media).values(values).onConflictDoNothing();
@@ -108,7 +134,8 @@ export async function getUserMediaAction() {
       category: m.category,
       status: m.status,
       posterUrl: m.posterUrl,
-      year: m.releaseYear
+      year: m.releaseYear,
+      isDocumentary: m.isDocumentary === "true"
     }));
     
     return { success: true, items };
@@ -118,46 +145,31 @@ export async function getUserMediaAction() {
   }
 }
 
-export async function searchMediaAction(query: string, category: "watch" | "read") {
+import { searchForMedia } from "@/lib/algorithms/media-searcher";
+
+export async function searchMediaAction(query: string, category: "watch" | "read", year?: string, author?: string) {
   try {
-    if (category === "watch") {
-      const results = await searchMovies(query);
-      return { success: true, results };
-    } else if (category === "read") {
-      const results = await searchBooks(query);
-      return { success: true, results };
-    }
-    return { success: true, results: [] };
+    const results = await searchForMedia(query, category, year, author);
+    return { success: true, results };
   } catch (error) {
     console.error("Search media action failed:", error);
     return { success: false, results: [] };
   }
 }
 
-export async function batchSearchMediaAction(queries: { query: string; category: "watch" | "read" }[]) {
-  try {
-    const resultsSettled = await Promise.allSettled(
-      queries.map(async (q) => {
-        if (q.category === "watch") {
-          // Pass 1: Primary search (usually Title + Year)
-          let movies = await searchMovies(q.query);
-          
-          // Pass 2: Fallback to Title only if Pass 1 failed
-          if (movies.length === 0 && q.query.match(/\d{4}$/)) {
-            const titleOnly = q.query.replace(/\s\d{4}$/, "");
-            movies = await searchMovies(titleOnly);
-          }
-          
-          return movies[0] || null;
-        } else if (q.category === "read") {
-          const books = await searchBooks(q.query);
-          return books[0] || null;
-        }
-        return null;
-      })
-    );
+import { matchMedia, MatchQuery } from "@/lib/algorithms/media-matcher";
 
-    const results = resultsSettled.map((res) => (res.status === "fulfilled" ? res.value : null));
+export async function batchSearchMediaAction(queries: MatchQuery[]) {
+  try {
+    const results: any[] = [];
+    for (let i = 0; i < queries.length; i++) {
+      const result = await matchMedia(queries[i]);
+      results.push(result);
+      
+      // Small staggered delay to prevent rate-limiting or concurrency issues
+      if (i < queries.length - 1) await new Promise(r => setTimeout(r, 200));
+    }
+    
     return { success: true, results };
   } catch (error) {
     console.error("Batch search failed:", error);

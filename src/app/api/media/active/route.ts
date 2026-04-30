@@ -9,7 +9,7 @@ export async function GET() {
       eq(media.status, "watching"),
       eq(media.status, "reading")
     ),
-    orderBy: (media, { desc }) => [desc(media.updatedAt)],
+    orderBy: (media, { desc }) => [desc(media.createdAt)],
   });
   
   return NextResponse.json(results);

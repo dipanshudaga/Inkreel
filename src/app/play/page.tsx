@@ -17,7 +17,7 @@ export default async function PlayPage() {
     <div className="flex flex-col">
       {/* Sector Header (Match Artboard F8-1) */}
       <div className="flex flex-col relative pt-12 gap-0 px-6 lg:px-20 max-w-[1440px] mx-auto w-full">
-        <h1 className="[letter-spacing:-2px] text-[#2C2E2C] font-extrabold text-[46px] leading-[56px] m-0">
+        <h1 className="[letter-spacing:-2px] text-[#2C2E2C] font-medium text-[46px] leading-[56px] m-0">
           Play
         </h1>
         <p className="text-[#8A8A7A] font-medium text-[16px] leading-[20px] m-0">

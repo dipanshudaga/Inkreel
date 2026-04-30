@@ -16,7 +16,7 @@ export function LogButton({ mediaId, type }: LogButtonProps) {
   return (
     <button 
       onClick={() => openQuickLog(mediaId)}
-      className="flex items-center gap-3 bg-traced-accent text-white px-10 h-14 font-sans text-sm font-semibold uppercase tracking-[0.1em] hover:bg-traced-accent/90 transition-all rounded-full shadow-[0_12px_24px_-8px_rgba(230,73,45,0.4)]"
+      className="flex items-center gap-3 bg-accent text-white px-10 h-14 font-sans text-sm font-medium uppercase tracking-[0.1em] hover:bg-accent/90 transition-all rounded-full shadow-[0_12px_24px_-8px_rgba(230,73,45,0.4)]"
     >
       <Plus size={20} strokeWidth={3} />
       Log {label}

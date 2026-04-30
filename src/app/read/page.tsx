@@ -4,6 +4,7 @@ import { eq, or, and, desc, asc, like, gte, lte } from "drizzle-orm";
 import { FilterBar } from "@/components/item/filter-bar";
 import { StoreInitializer } from "@/components/item/store-initializer";
 import { DiaryGrid } from "@/components/diary/diary-grid";
+import { DiaryTimeline } from "@/components/diary/diary-timeline";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -27,7 +28,8 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
     type = "all", 
     genre = "all",
     decade = "all",
-    sort = "logged_desc" 
+    sort = "logged_desc",
+    view = "grid"
   } = await searchParams;
 
   const conditions: any[] = [];
@@ -78,19 +80,29 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
   const uniqueDecades = [...new Set(uniqueYears.map(y => Math.floor(y / 10) * 10))].map(d => `${d}s`);
 
   return (
-    <div className="flex min-h-screen bg-traced-bg">
+    <div className="flex min-h-screen bg-bg">
       <StoreInitializer items={readItems} />
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex flex-col pt-8 pb-4 gap-4 px-12 border-b-hairline bg-traced-bg sticky top-0 z-50">
-          <h1 className="tracking-[-0.04em] text-traced-dark font-serif font-medium text-4xl m-0 italic">
-            Read Diary
-          </h1>
-          
+      <div className="flex-1 flex flex-col pt-24">
+        {/* Header Section */}
+        <header className="px-12 mb-12 flex flex-col gap-6">
+          <div className="flex items-center gap-6">
+            <h1 className="text-5xl lg:text-7xl font-serif font-medium italic tracking-[-0.05em] leading-[0.9] m-0">
+              Read.
+            </h1>
+            <div className="h-px grow bg-dark/10" />
+          </div>
+          <p className="text-xl font-serif italic opacity-40 max-w-xl">
+            An archival log of your literary journeys and written archives.
+          </p>
+        </header>
+
+        {/* Sticky Filter Container */}
+        <div className="flex flex-col pb-4 gap-4 px-12 border-b-hairline bg-bg sticky top-0 z-50">
           <FilterBar 
             genres={uniqueGenres}
             decades={uniqueDecades}
             currentFilters={{ filter, type, genre, decade, sort }}
+            currentView={view}
             categoryLabel="Shelf"
             typeLabel="Format"
           />
@@ -98,11 +110,19 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
 
         {/* Items Grid */}
         <div className="flex flex-col px-12 py-8">
-          <DiaryGrid 
-            initialItems={readItems} 
-            currentFilter={filter} 
-            category="read" 
-          />
+          {view === "timeline" ? (
+            <DiaryTimeline
+              initialItems={readItems}
+              currentFilter={filter}
+              category="read"
+            />
+          ) : (
+            <DiaryGrid 
+              initialItems={readItems} 
+              currentFilter={filter} 
+              category="read" 
+            />
+          )}
         </div>
       </div>
     </div>

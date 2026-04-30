@@ -1,24 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  /* Traced Design Variables */
-  --color-traced-bg: #F7F5F0;    /* Swiss Grid background */
-  --color-traced-surface: #EBE8DE; /* Secondary surface */
-  --color-traced-dark: #1A1A1A;  /* Primary text / borders */
-  --color-traced-gray: #666666;  /* Secondary text */
-  --color-traced-accent: #DE3C26; /* Primary accent red */
+  /* Default Design Variables (Cream Heritage) */
+  --color-bg: #F7F5F0;    
+  --color-surface: #EBE8DE; 
+  --color-dark: #1A1A1A;  
+  --color-gray: #666666;  
+  --color-accent: #DE3C26; 
 
   --font-newsreader: "Newsreader", serif;
   --font-space-grotesk: "Space Grotesk", sans-serif;
   
   --font-sans: var(--font-space-grotesk);
   --font-serif: var(--font-newsreader);
+
+  /* Compatibility Mapping */
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-dark);
 }
 
 @layer base {
+  :root[data-theme="cream"] {
+    --color-bg: #F7F5F0;
+    --color-surface: #EBE8DE;
+    --color-dark: #1A1A1A;
+  }
+
+  :root[data-theme="modern"] {
+    --color-bg: #FFFFFF;
+    --color-surface: #F8F8F8;
+    --color-dark: #000000;
+  }
+
+  :root[data-font="serif"] {
+    --font-sans: var(--font-newsreader);
+  }
+
+  :root[data-font="sans"] {
+    --font-sans: var(--font-space-grotesk);
+  }
+
   :root {
-    --background: var(--color-traced-bg);
-    --foreground: var(--color-traced-dark);
+    --background: var(--color-bg);
+    --foreground: var(--color-dark);
   }
 
   body {
@@ -47,30 +71,50 @@
   }
 }
 
-@utility border-hairline {
-  border: 1px solid var(--color-traced-dark);
-}
+@layer utilities {
+  .border-hairline {
+    border: 1px solid var(--color-dark);
+  }
 
-@utility border-b-hairline {
-  border-bottom: 1px solid var(--color-traced-dark);
-}
+  .border-t-hairline {
+    border-top: 1px solid var(--color-dark);
+  }
 
-@utility border-r-hairline {
-  border-right: 1px solid var(--color-traced-dark);
-}
+  .border-b-hairline {
+    border-bottom: 1px solid var(--color-dark);
+  }
 
-@utility border-t-hairline {
-  border-top: 1px solid var(--color-traced-dark);
+  .border-l-hairline {
+    border-left: 1px solid var(--color-dark);
+  }
+
+  .border-r-hairline {
+    border-right: 1px solid var(--color-dark);
+  }
+
+  .border-x-hairline {
+    border-left: 1px solid var(--color-dark);
+    border-right: 1px solid var(--color-dark);
+  }
+
+  .border-y-hairline {
+    border-top: 1px solid var(--color-dark);
+    border-bottom: 1px solid var(--color-dark);
+  }
+
+  .divide-hairline > * + * {
+    border-left: 1px solid var(--color-dark);
+  }
 }
 
 @layer components {
-  .traced-container {
+  .container-max {
     @apply w-full max-w-[1440px] mx-auto;
   }
 
   /* Global Button styles */
   .btn-accent {
-    @apply bg-traced-accent text-[#F7F5F0] font-bold text-[14px] px-6 py-2.5 transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2;
+    @apply bg-accent text-bg font-medium text-[14px] px-6 py-2.5 transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2;
   }
 }
 
@@ -81,13 +125,13 @@
 
 ::-webkit-scrollbar-track {
   background: transparent;
-  border-left: 1px solid var(--color-traced-dark);
+  border-left: 1px solid var(--color-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-traced-dark);
+  background: var(--color-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-traced-accent);
+  background: var(--color-accent);
 }

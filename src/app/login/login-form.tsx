@@ -44,12 +44,12 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-10">
       {error && (
-        <p className="text-[10px] font-sans font-bold uppercase tracking-widest text-red-600 text-center">{error}</p>
+        <p className="text-[10px] font-sans font-medium uppercase tracking-widest text-red-600 text-center">{error}</p>
       )}
 
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-3">
-          <label className="text-[10px] font-sans font-bold uppercase tracking-[0.1em] text-[#737373]">Username</label>
+          <label className="text-[10px] font-sans font-medium uppercase tracking-[0.1em] text-[#737373]">Username</label>
           <input
             name="username"
             type="text"
@@ -59,7 +59,7 @@ export function LoginForm() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <label className="text-[10px] font-sans font-bold uppercase tracking-[0.1em] text-[#737373]">Password</label>
+          <label className="text-[10px] font-sans font-medium uppercase tracking-[0.1em] text-[#737373]">Password</label>
           <input
             name="password"
             type="password"
@@ -72,7 +72,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full h-14 bg-[#8C8C8C] text-white font-sans text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#1A1A1A] transition-all disabled:opacity-50"
+        className="w-full h-14 bg-gray text-white font-sans text-[11px] font-medium uppercase tracking-[0.2em] hover:bg-dark transition-all disabled:opacity-50"
       >
         {loading ? "Verifying..." : "Verify Identity"}
       </button>

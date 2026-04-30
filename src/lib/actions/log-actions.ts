@@ -20,9 +20,6 @@ export async function addQuickLog(formData: FormData) {
     action: "progress_update",
   });
 
-  // Update the media's updatedAt timestamp
-  await db.update(media).set({ updatedAt: new Date() }).where(eq(media.id, mediaId));
-
   revalidatePath("/watch");
   revalidatePath("/read");
   revalidatePath(`/items/${mediaId}`);

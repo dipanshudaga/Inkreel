@@ -95,8 +95,8 @@ export function FilteredMediaView({ initialItems, userItems, category }: Filtere
             className={cn(
               "rounded-full px-6 py-2.5 text-[14px] transition-all duration-200 cursor-pointer whitespace-nowrap",
               activeTab === tab.id 
-                ? "bg-vault-dark text-vault-bg font-bold shadow-[0_4px_12px_rgba(44,46,44,0.15)]" 
-                : "bg-[#2C2E2C0D] text-[#68685A] font-semibold hover:bg-[#2C2E2C1A]"
+                ? "bg-vault-dark text-vault-bg font-medium shadow-[0_4px_12px_rgba(44,46,44,0.15)]" 
+                : "bg-[#2C2E2C0D] text-[#68685A] font-medium hover:bg-[#2C2E2C1A]"
             )}
           >
             {tab.label}
@@ -150,7 +150,7 @@ export function FilteredMediaView({ initialItems, userItems, category }: Filtere
               <div className="py-24 flex flex-col items-center justify-center text-center gap-4 rounded-3xl bg-black/[0.03] w-full">
                 <span className="text-4xl">🫙</span>
                 <div>
-                  <h3 className="text-[18px] font-bold text-vault-dark tracking-tight">Nothing here</h3>
+                  <h3 className="text-[18px] font-medium text-vault-dark tracking-tight">Nothing here</h3>
                   <p className="text-[14px] font-medium text-vault-gray mt-1 max-w-sm mx-auto">You haven't logged any data in this specific sector yet.</p>
                 </div>
               </div>

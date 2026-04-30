@@ -19,7 +19,7 @@ export function ExitButton({ href }: ExitButtonProps) {
   return (
     <button 
       onClick={handleExit}
-      className="fixed top-8 right-8 z-[100] size-12 flex items-center justify-center bg-black text-white hover:bg-traced-accent transition-colors shadow-2xl cursor-pointer"
+      className="fixed top-8 right-8 z-[100] size-12 flex items-center justify-center bg-black text-white hover:bg-accent transition-colors shadow-2xl cursor-pointer"
     >
       <X size={24} strokeWidth={2.5} />
     </button>

@@ -13,7 +13,7 @@ export function DynamicGreeting() {
   }, []);
 
   return (
-    <h1 className="text-[72px] leading-[1.1] tracking-[-0.03em] text-traced-dark font-serif font-medium italic m-0">
+    <h1 className="text-[72px] leading-[1.1] tracking-[-0.03em] text-dark font-serif font-medium italic m-0">
       {greeting}
     </h1>
   );

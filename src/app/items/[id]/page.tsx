@@ -112,22 +112,22 @@ export default async function ItemPage({ params }: ItemPageProps) {
   const displayCreator = item.creator && !item.creator.toLowerCase().includes("unknown");
 
   return (
-    <div className="min-h-screen bg-traced-bg text-traced-dark selection:bg-traced-accent selection:text-white pb-20 relative">
+    <div className="min-h-screen bg-bg text-dark selection:bg-accent selection:text-white pb-20 relative">
       <ExitButton href={item.category === 'read' ? '/read' : '/watch'} />
 
       {/* Hero Section */}
-      <div className="relative h-[45vh] w-full overflow-hidden group bg-traced-surface">
+      <div className="relative h-[45vh] w-full overflow-hidden group bg-surface">
         {item.backdropUrl ? (
           <>
             <img 
               src={item.backdropUrl} 
-              className="size-full object-cover opacity-20 grayscale-[0.5] transition-all duration-1000 group-hover:opacity-30 group-hover:grayscale-0"
+              className="size-full object-cover opacity-20 grayscale"
               alt=""
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-traced-bg via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent" />
           </>
         ) : (
-          <div className="size-full bg-traced-surface flex items-center justify-center">
+          <div className="size-full bg-surface flex items-center justify-center">
              <div className="text-[120px] font-serif italic opacity-[0.03] select-none pointer-events-none">INKREEL.</div>
           </div>
         )}
@@ -138,27 +138,26 @@ export default async function ItemPage({ params }: ItemPageProps) {
           
           {/* Poster Column */}
           <aside className="w-72 flex-shrink-0 flex flex-col gap-10">
-            <div className="relative aspect-[2/3] border-hairline bg-traced-surface overflow-hidden shadow-2xl transition-all duration-700 hover:scale-[1.02] group/poster">
+            <div className="relative aspect-[2/3] border-hairline bg-surface overflow-hidden shadow-2xl group/poster">
               {item.posterUrl ? (
-                <img src={item.posterUrl} alt={item.title} className="size-full object-cover transition-transform duration-1000 group-hover/poster:scale-105" />
+                <img src={item.posterUrl} alt={item.title} className="size-full object-cover" />
               ) : (
-                <div className="size-full flex items-center justify-center text-[10px] uppercase tracking-widest opacity-10 font-bold">No Art</div>
+                <div className="size-full flex items-center justify-center text-[10px] uppercase tracking-widest opacity-10 font-medium">No Art</div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/poster:opacity-100 transition-opacity duration-700" />
             </div>
 
             {/* Metadata moved below poster */}
-            <div className="flex flex-col gap-8 py-8 border-t border-traced-dark/10">
+            <div className="flex flex-col gap-8 py-8 border-t border-dark/10">
               <div className="flex flex-col gap-1 pl-4">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">Format</span>
+                <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-gray">Format</span>
                 <span className="font-serif italic text-lg">{item.format || item.type || "Standard"}</span>
               </div>
               <div className="flex flex-col gap-1 pl-4">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">Language</span>
+                <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-gray">Language</span>
                 <span className="font-serif italic text-lg">{item.language || "Native"}</span>
               </div>
               <div className="flex flex-col gap-1 pl-4">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">Genre</span>
+                <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-gray">Genre</span>
                 <div className="flex flex-wrap gap-1 font-serif italic text-lg">
                   {genresArray.filter((g: string) => g).map((genre: string, idx: number) => (
                     <span key={genre}>{genre}{idx < genresArray.length - 1 ? "," : ""}</span>
@@ -166,7 +165,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
                 </div>
               </div>
               <div className="flex flex-col gap-1 pl-4">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray">
+                <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-gray">
                   {item.category === 'read' ? 'Quantity' : 'Duration'}
                 </span>
                 <span className="font-serif italic text-lg">
@@ -183,7 +182,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
             <header className="mb-14 flex flex-col gap-2">
               <div className="flex items-center gap-4 mb-2">
                 <span className="font-serif italic text-2xl opacity-30">{item.releaseYear || "N/A"}</span>
-                <div className="h-px grow bg-traced-dark/10" />
+                <div className="h-px grow bg-dark/10" />
               </div>
               
               <h1 className="text-4xl lg:text-5xl font-serif font-medium italic tracking-[-0.05em] leading-[0.9] m-0 mb-3">
@@ -198,7 +197,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
               {displayCreator && (
                 <div className="mt-8 flex items-baseline gap-2">
-                  <span className="text-[9px] font-sans font-bold uppercase tracking-widest opacity-30">
+                  <span className="text-[9px] font-sans font-medium uppercase tracking-widest opacity-30">
                     {item.category === 'read' ? 'Written by' : 'Directed by'}
                   </span>
                   <span className="font-serif text-2xl italic opacity-80">{item.creator}</span>
@@ -207,7 +206,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
             </header>
 
             <section className="mb-16">
-              <span className="block text-[9px] uppercase tracking-[0.3em] font-bold text-traced-gray mb-6 border-b border-traced-dark pb-2 w-fit">Synopsis</span>
+              <span className="block text-[9px] uppercase tracking-[0.3em] font-medium text-gray mb-6 border-b border-dark pb-2 w-fit">Synopsis</span>
               <p className="text-xl font-serif leading-relaxed max-w-2xl opacity-90 first-letter:text-5xl first-letter:font-serif first-letter:float-left first-letter:mr-3 first-letter:mt-1">
                 {item.description?.replace(/<[^>]*>?/gm, '') || "In the vast expanse of the diary, this particular narrative remains partially veiled."}
               </p>
@@ -216,7 +215,7 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
           {/* Action Sidebar */}
           <aside className="w-full lg:w-72 pt-40">
-            <div className="border-hairline bg-traced-surface p-10 flex flex-col gap-10 sticky top-10 items-center">
+            <div className="border-hairline bg-surface p-10 flex flex-col gap-10 sticky top-10 items-center">
               <ActionBar
                 initialStatus={item.status}
                 mediaId={item.id}

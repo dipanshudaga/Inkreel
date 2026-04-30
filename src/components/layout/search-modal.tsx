@@ -63,15 +63,15 @@ export function SearchModal() {
 
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-[#F7F5F0]/90 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-bg/90 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={close}
     >
       <div 
-        className="w-[720px] flex flex-col bg-traced-bg border border-[#1A1A1A] animate-in zoom-in-95 slide-in-from-top-4 duration-300"
+        className="w-[720px] flex flex-col bg-bg border-hairline animate-in zoom-in-95 slide-in-from-top-4 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center py-6 px-8 gap-4 border-b border-[#1A1A1A]">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="square">
+        <div className="flex items-center py-6 px-8 gap-4 border-b-hairline">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-dark" strokeWidth="2" strokeLinecap="square">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -79,27 +79,27 @@ export function SearchModal() {
             ref={inputRef}
             type="text"
             placeholder="Search your diary or add new..."
-            className="grow bg-transparent border-none outline-none text-traced-dark font-serif italic text-[32px] placeholder:text-traced-gray/30"
+            className="grow bg-transparent border-none outline-none text-dark font-serif italic text-[32px] placeholder:text-gray/30"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <div className="py-1 px-2 border border-[#1A1A1A] bg-white">
-            <span className="tracking-[0.05em] uppercase text-[#737373] font-sans font-medium text-[11px]">
+          <div className="py-1 px-2 border-hairline bg-white">
+            <span className="tracking-[0.05em] uppercase text-gray font-sans font-medium text-[11px]">
               ESC
             </span>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2 px-8 py-3 bg-[#FAF9F6] border-b border-[#1A1A1A]">
+        <div className="flex items-center gap-2 px-8 py-3 bg-surface border-b-hairline">
           {['all', 'movie', 'tv', 'anime', 'book', 'manga'].map((f) => (
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`px-3 py-1 text-[10px] uppercase tracking-widest font-bold border transition-all duration-200 ${
+              className={`px-3 py-1 text-[10px] uppercase tracking-widest font-medium border transition-all duration-200 ${
                 activeFilter === f 
-                  ? 'bg-traced-dark text-white border-traced-dark' 
-                  : 'bg-white text-[#737373] border-[#E5E5E5] hover:border-[#1A1A1A] hover:text-traced-dark'
+                  ? 'bg-dark text-white border-dark' 
+                  : 'bg-white text-gray border-dark/10 hover:border-dark hover:text-dark'
               }`}
             >
               {f === 'all' ? 'All' : f === 'tv' ? 'TV Shows' : f.charAt(0).toUpperCase() + f.slice(1) + 's'}
@@ -109,7 +109,7 @@ export function SearchModal() {
 
         <div className="flex flex-col py-4 max-h-[60vh] overflow-y-auto">
           {query.length > 0 && results.length === 0 && !isLoading && (
-            <div className="px-8 py-4 text-traced-gray font-sans text-sm uppercase tracking-wider">
+            <div className="px-8 py-4 text-gray font-sans text-sm uppercase tracking-wider">
               No results found.
             </div>
           )}
@@ -126,10 +126,10 @@ export function SearchModal() {
                 return (
                   <div key={type} className="flex flex-col">
                     <div className="py-2 px-8 flex items-center justify-between">
-                      <span className="tracking-[0.05em] uppercase text-[#737373] font-sans font-semibold text-[11px]">
+                      <span className="tracking-[0.05em] uppercase text-gray font-sans font-medium text-[11px]">
                         {type === 'tv' ? 'TV Shows' : type.charAt(0).toUpperCase() + type.slice(1) + 's'}
                       </span>
-                      <span className="text-[10px] text-traced-gray font-sans uppercase tracking-widest">
+                      <span className="text-[10px] text-gray font-sans uppercase tracking-widest">
                         {typeResults.length} {typeResults.length === 1 ? 'result' : 'results'}
                       </span>
                     </div>
@@ -150,14 +150,14 @@ export function SearchModal() {
                       return (
                         <div 
                           key={item.id} 
-                          className={`flex items-center py-3 px-8 gap-4 cursor-pointer hover:bg-traced-surface transition-colors border-l-2 ${idx === 0 && (activeFilter !== 'all' || type === results[0].type) ? 'border-traced-accent bg-traced-surface' : 'border-transparent'}`}
+                          className={`flex items-center py-3 px-8 gap-4 cursor-pointer hover:bg-surface transition-colors border-l-2 ${idx === 0 && (activeFilter !== 'all' || type === results[0].type) ? 'border-accent bg-surface' : 'border-transparent'}`}
                           onClick={() => {
                             const cat = (item.type === 'book' || item.type === 'manga') ? 'read' : 'watch';
                             router.push(`/items/${item.id}?cat=${cat}`);
                             close();
                           }}
                         >
-                          <div className="w-10 h-15 shrink-0 overflow-hidden bg-[#CCCCCC] border border-[#1A1A1A]">
+                          <div className="w-10 h-15 shrink-0 overflow-hidden bg-surface border-hairline">
                             {item.posterUrl ? (
                               <img 
                                 src={item.posterUrl} 
@@ -165,16 +165,16 @@ export function SearchModal() {
                                 alt=""
                               />
                             ) : (
-                              <div className="size-full flex items-center justify-center text-traced-gray text-[8px] uppercase tracking-widest text-center px-1">
+                              <div className="size-full flex items-center justify-center text-gray text-[8px] uppercase tracking-widest text-center px-1">
                                 No Cover
                               </div>
                             )}
                           </div>
                           <div className="grow">
-                            <div className="text-[20px] leading-tight text-traced-dark font-serif">
+                            <div className="text-[20px] leading-tight text-dark font-serif">
                               {item.title}
                             </div>
-                            <div className="uppercase tracking-[0.05em] mt-1 text-[#737373] font-sans text-xs">
+                            <div className="uppercase tracking-[0.05em] mt-1 text-gray font-sans text-xs">
                               {sublabel}{item.status ? ` • ${item.status}` : ''}
                             </div>
                           </div>
@@ -188,8 +188,8 @@ export function SearchModal() {
           )}
         </div>
 
-        <div className="flex items-center py-4 px-8 bg-[#FAF9F6] border-t border-[#1A1A1A]">
-          <span className="tracking-[0.05em] uppercase text-[#737373] font-sans text-[11px]">
+        <div className="flex items-center py-4 px-8 bg-surface border-t-hairline">
+          <span className="tracking-[0.05em] uppercase text-gray font-sans text-[11px]">
             Press Enter to select • Use arrows to navigate
           </span>
         </div>

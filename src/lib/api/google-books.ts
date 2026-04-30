@@ -1,8 +1,18 @@
 const GOOGLE_BOOKS_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
 
-export async function searchBooks(query: string) {
+export async function searchBooks(query: string, author?: string, year?: string) {
   try {
-    const res = await fetch(`${GOOGLE_BOOKS_BASE_URL}?q=${encodeURIComponent(query)}&maxResults=20`);
+    let finalQuery = query;
+    if (query.startsWith("gb-import-") || query.match(/^\d{10}|\d{13}$/)) {
+      const isbn = query.replace("gb-import-", "");
+      finalQuery = `isbn:${isbn}`;
+    } else {
+      if (author) finalQuery += ` inauthor:${author}`;
+      // Note: Google Books doesn't have a reliable 'year' filter in the query string, 
+      // but we can add it to the general search or filter results later.
+    }
+
+    const res = await fetch(`${GOOGLE_BOOKS_BASE_URL}?q=${encodeURIComponent(finalQuery)}&maxResults=20`);
     if (!res.ok) throw new Error(`Google Books Error: ${res.status}`);
     const data = await res.json();
     
@@ -14,6 +24,9 @@ export async function searchBooks(query: string) {
         
         if (hasImageB !== hasImageA) return hasImageB - hasImageA;
         
+        // If searching by ISBN, we want the most relevant (usually first)
+        if (finalQuery.startsWith("isbn:")) return 0;
+
         const countA = a.volumeInfo.ratingsCount || 0;
         const countB = b.volumeInfo.ratingsCount || 0;
         return countB - countA;
@@ -38,7 +51,7 @@ export async function getTrendingBooks(startIndex = 0) {
   // Use a generic query for popular books since Google Books doesn't have a "trending" endpoint
   const url = `${GOOGLE_BOOKS_BASE_URL}?q=subject:fiction&orderBy=relevance&startIndex=${startIndex}&maxResults=10`;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { next: { revalidate: 86400 } });
     if (!res.ok) {
       throw new Error(`Google Books API Error: ${res.status}`);
     }

@@ -14,25 +14,20 @@ export default async function Home() {
   }
 
   return (
-    <div className="grow flex flex-col py-16 px-20 min-h-screen bg-traced-bg overflow-y-auto">
+    <div className="grow flex flex-col py-16 px-20 min-h-screen bg-bg overflow-y-auto">
       <div className="mb-16">
         <DynamicGreeting />
         <div className="mt-8 flex items-center gap-4">
-          <div className="h-px w-12 bg-traced-accent" />
-          <p className="tracking-[0.1em] uppercase text-[#737373] font-sans text-xs font-semibold">
+          <div className="h-px w-12 bg-accent" />
+          <p className="tracking-[0.1em] uppercase text-gray font-sans text-xs font-medium">
             Personal Media Diary
           </p>
         </div>
       </div>
 
       <div className="flex flex-col gap-16">
-        <Suspense fallback={<SectionSkeleton title="Watch" href="/watch" />}>
-          <TrendingWatch />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton title="Read" href="/read" />}>
-          <TrendingRead />
-        </Suspense>
+        <TrendingWatch />
+        <TrendingRead />
       </div>
     </div>
   );
@@ -40,18 +35,18 @@ export default async function Home() {
 
 function LandingPage() {
   return (
-    <div className="min-h-screen bg-traced-bg flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-6 text-center">
       <div className="max-w-2xl flex flex-col items-center gap-12">
-        <h1 className="text-[80px] md:text-[120px] leading-[0.9] tracking-[-0.04em] text-traced-dark font-serif font-medium italic">
+        <h1 className="text-[80px] md:text-[120px] leading-[0.9] tracking-[-0.04em] text-dark font-serif font-medium italic">
           Inkreel.
         </h1>
         
         <div className="flex flex-col gap-6">
-          <p className="text-xl md:text-2xl font-serif italic text-traced-gray max-w-lg">
+          <p className="text-xl md:text-2xl font-serif italic text-gray max-w-lg">
             A private personal media diary for the things you watch and read.
           </p>
-          <div className="h-px w-24 bg-traced-accent mx-auto" />
-          <p className="tracking-[0.2em] uppercase text-traced-gray font-sans text-[10px] font-bold">
+          <div className="h-px w-24 bg-accent mx-auto" />
+          <p className="tracking-[0.2em] uppercase text-gray font-sans text-[10px] font-medium">
             LOG YOUR CULTURAL JOURNEY
           </p>
         </div>
@@ -59,11 +54,11 @@ function LandingPage() {
         <div className="flex flex-col gap-4 w-full max-w-xs">
           <Link 
             href="/login" 
-            className="bg-traced-dark text-white py-5 px-8 font-sans font-bold uppercase tracking-[0.2em] text-sm hover:bg-traced-accent transition-all duration-500 text-center"
+            className="bg-dark text-white py-5 px-8 font-sans font-medium uppercase tracking-[0.2em] text-sm hover:bg-accent transition-all duration-500 text-center"
           >
             Enter the Diary
           </Link>
-          <p className="text-[10px] font-sans text-traced-gray uppercase tracking-widest">
+          <p className="text-[10px] font-sans text-gray uppercase tracking-widest">
             PRIVATE • SECURE • MINIMAL
           </p>
         </div>
@@ -96,8 +91,8 @@ function TrendingSection({ title, href, items, category }: { title: string, href
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between border-b-hairline pb-4">
-        <h2 className="text-2xl font-serif font-medium text-traced-dark italic m-0">{title}</h2>
-        <Link href={href} className="text-xs font-sans uppercase tracking-widest text-[#737373] hover:text-traced-dark transition-colors font-semibold">
+        <h2 className="text-2xl font-serif font-medium text-dark italic m-0">{title}</h2>
+        <Link href={href} className="text-xs font-sans uppercase tracking-widest text-gray hover:text-dark transition-colors font-medium">
           View Your Diary
         </Link>
       </div>
@@ -121,7 +116,7 @@ function SectionSkeleton({ title, href }: { title: string, href: string }) {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between border-b border-hairline pb-4">
-        <h2 className="text-2xl font-serif font-medium text-traced-dark italic m-0 opacity-50">{title}</h2>
+        <h2 className="text-2xl font-serif font-medium text-dark italic m-0 opacity-50">{title}</h2>
         <div className="w-24 h-4 bg-black/5 animate-pulse" />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12">

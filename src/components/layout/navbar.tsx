@@ -25,7 +25,7 @@ export function Navbar() {
   return (
     <header className="w-full relative z-[100] bg-vault-bg">
       <div className="flex items-center justify-between py-5 px-6 lg:px-20 max-w-[1440px] mx-auto w-full">
-        <Link href="/" className="[letter-spacing:-1px] inline-block text-vault-dark font-extrabold text-[24px]">
+        <Link href="/" className="[letter-spacing:-1px] inline-block text-vault-dark font-medium text-[24px]">
           Content Vault
         </Link>
         <div className="hidden md:flex items-center gap-10">
@@ -36,7 +36,7 @@ export function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "inline-block font-semibold text-[18px]",
+                  "inline-block font-medium text-[18px]",
                   isActive ? "text-vault-dark" : "text-vault-gray hover:text-vault-dark transition-colors"
                 )}
               >
@@ -59,7 +59,7 @@ export function Navbar() {
             onClick={() => onOpenLog()}
             className="rounded-full py-2.5 px-6 bg-[#2C2E2C] cursor-pointer hover:opacity-90 transition-opacity"
           >
-            <div className="text-[#FBF8F0] font-bold text-sm">
+            <div className="text-[#FBF8F0] font-medium text-sm">
               Log
             </div>
           </button>

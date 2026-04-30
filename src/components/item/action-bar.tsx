@@ -110,14 +110,14 @@ export function ActionBar({
       className={cn(
         "flex flex-col items-center gap-2 group transition-all cursor-pointer",
         active ? "opacity-100" : "opacity-30 hover:opacity-100",
-        active && color === "accent" && "text-traced-accent"
+        active && color === "accent" && "text-accent"
       )}
     >
       <div className={cn(
-        "size-14 flex items-center justify-center border border-black/10 transition-all duration-300",
+        "size-14 flex items-center justify-center border border-dark/10 transition-all duration-300",
         active 
-          ? (color === "accent" ? "bg-traced-accent text-white border-traced-accent shadow-lg scale-105" : "bg-black text-white border-black scale-105") 
-          : "bg-transparent hover:border-black"
+          ? (color === "accent" ? "bg-accent text-white border-accent shadow-lg scale-105" : "bg-dark text-white border-dark scale-105") 
+          : "bg-transparent hover:border-dark"
       )}>
         {loading === action ? (
           <Loader2 size={18} className="animate-spin" />
@@ -125,30 +125,30 @@ export function ActionBar({
           <Icon size={22} strokeWidth={active ? 2.5 : 2} fill={active && action === "loved" ? "currentColor" : "none"} />
         )}
       </div>
-      <span className="text-[8px] font-bold uppercase tracking-[0.2em]">{label}</span>
+      <span className="text-[8px] font-medium uppercase tracking-[0.2em]">{label}</span>
     </button>
   );
 
   if (variant === "grid") {
     return (
-      <div className="flex border-hairline border-t-0 divide-x divide-traced-dark h-9 bg-traced-bg w-full">
+      <div className="flex border-x-hairline border-b-hairline divide-hairline h-11 bg-bg w-full">
         <button
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("completed"); }}
-          className={cn("flex-1 flex items-center justify-center transition-colors", isCompleted ? "bg-black text-white" : "text-traced-gray hover:bg-black/5")}
+          className={cn("flex-1 flex items-center justify-center transition-colors", isCompleted ? "bg-dark text-white" : "text-dark hover:bg-dark/10")}
         >
-          {loading === "completed" ? <Loader2 size={14} className="animate-spin" /> : (isRead ? <Check size={16} /> : <Eye size={16} />)}
+          {loading === "completed" ? <Loader2 size={16} className="animate-spin" /> : (isRead ? <Check size={20} strokeWidth={2} /> : <Eye size={20} strokeWidth={2} />)}
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("planned"); }}
-          className={cn("flex-1 flex items-center justify-center transition-colors", isPlanned ? "bg-black text-white" : "text-traced-gray hover:bg-black/5")}
+          className={cn("flex-1 flex items-center justify-center transition-colors", isPlanned ? "bg-dark text-white" : "text-dark hover:bg-dark/10")}
         >
-          {loading === "planned" ? <Loader2 size={14} className="animate-spin" /> : <Bookmark size={16} />}
+          {loading === "planned" ? <Loader2 size={16} className="animate-spin" /> : <Bookmark size={18} strokeWidth={2} />}
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("loved"); }}
-          className={cn("flex-1 flex items-center justify-center transition-colors", isLoved ? "bg-traced-accent text-white" : "text-traced-gray hover:bg-black/5")}
+          className={cn("flex-1 flex items-center justify-center transition-colors", isLoved ? "bg-accent text-white" : "text-dark hover:bg-dark/10")}
         >
-          {loading === "loved" ? <Loader2 size={14} className="animate-spin" /> : <Heart size={16} fill={isLoved ? "currentColor" : "none"} />}
+          {loading === "loved" ? <Loader2 size={16} className="animate-spin" /> : <Heart size={18} strokeWidth={2} fill={isLoved ? "currentColor" : "none"} />}
         </button>
       </div>
     );

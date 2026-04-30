@@ -42,5 +42,15 @@ export async function GET(req: NextRequest) {
   const localIds = new Set(localResults.map(r => r.id));
   const filteredGlobal = uniqueGlobal.filter(g => !localIds.has(g.id));
 
-  return NextResponse.json([...localResults, ...filteredGlobal]);
+  const allResults = [...localResults, ...filteredGlobal];
+  
+  // Final safeguard: Deduplicate by ID one last time in case global results had duplicates
+  const seenIds = new Set();
+  const finalResults = allResults.filter(r => {
+    if (seenIds.has(r.id)) return false;
+    seenIds.add(r.id);
+    return true;
+  });
+
+  return NextResponse.json(finalResults);
 }

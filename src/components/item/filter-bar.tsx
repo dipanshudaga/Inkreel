@@ -46,18 +46,34 @@ function FilterGroup({ label, options, paramName, currentValue }: FilterGroupPro
 
   const selectedOption = options.find(o => o.value === currentValue) || { label: label, value: "all" };
 
+  const isFiltered = currentValue !== "all" && currentValue !== "";
+
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative flex items-center" ref={containerRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-1.5 py-2 px-3 border-hairline bg-white hover:bg-black/5 transition-colors uppercase tracking-widest font-sans font-bold text-[10px]",
-          currentValue !== "all" && currentValue !== "" ? "text-traced-accent border-traced-accent" : "text-[#737373]"
+          "flex items-center gap-1.5 py-2 px-3 border-hairline transition-colors uppercase tracking-widest font-sans font-medium text-[10px]",
+          isFiltered ? "text-accent border-accent bg-white" : "text-dark bg-white hover:bg-black/5",
+          isFiltered && "border-r-0 pr-1.5"
         )}
       >
-        <span>{currentValue !== "all" && currentValue !== "" ? selectedOption.label : label}</span>
+        <span>{isFiltered ? selectedOption.label : label}</span>
         <ChevronDown size={12} className={cn("transition-transform", isOpen && "rotate-180")} />
       </button>
+
+      {isFiltered && (
+        <Link
+          href={`${pathname}?${createQueryString("all")}`}
+          className="flex items-center justify-center h-[31px] px-2 border-hairline border-l-0 text-accent hover:bg-accent hover:text-white transition-colors"
+          title="Clear filter"
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </Link>
+      )}
 
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 w-48 bg-white border-hairline z-[60] py-2 animate-in fade-in slide-in-from-top-1 duration-200">
@@ -68,8 +84,8 @@ function FilterGroup({ label, options, paramName, currentValue }: FilterGroupPro
                 href={`${pathname}?${createQueryString(option.value)}`}
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  "flex items-center justify-between px-4 py-2 hover:bg-traced-surface text-[11px] uppercase tracking-wider font-sans transition-colors",
-                  currentValue === option.value ? "text-traced-accent font-bold" : "text-traced-dark"
+                  "flex items-center justify-between px-4 py-2 hover:bg-surface text-[11px] uppercase tracking-wider font-sans transition-colors",
+                  currentValue === option.value ? "text-accent font-medium" : "text-dark"
                 )}
               >
                 {option.label}
@@ -87,6 +103,7 @@ export function FilterBar({
   genres, 
   decades,
   currentFilters,
+  currentView = "grid",
   categoryOptions,
   typeOptions,
   categoryLabel,
@@ -101,11 +118,25 @@ export function FilterBar({
     decade: string;
     sort: string;
   },
+  currentView?: string,
   categoryOptions?: FilterOption[],
   typeOptions?: FilterOption[],
   categoryLabel?: string,
   typeLabel?: string
 }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const createQueryString = (name: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === "all" || value === "") {
+      params.delete(name);
+    } else {
+      params.set(name, value);
+    }
+    return params.toString();
+  };
+
   const defaultCategories = [
     { label: "All", value: "all" },
     { label: "Watched", value: "watched" },
@@ -118,6 +149,7 @@ export function FilterBar({
     { label: "Movies", value: "movie" },
     { label: "TV Shows", value: "tv" },
     { label: "Anime", value: "anime" },
+    { label: "Documentary", value: "documentary" },
   ];
 
   const categories = categoryOptions || defaultCategories;
@@ -133,7 +165,29 @@ export function FilterBar({
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-3 py-4 bg-traced-bg">
+    <div className="flex flex-wrap items-center gap-3 py-4 bg-bg">
+      {/* View Switcher */}
+      <div className="flex border-hairline bg-white overflow-hidden mr-2">
+        <Link 
+          href={`${pathname}?${createQueryString("view", "grid")}`}
+          className={cn(
+            "px-4 py-2 text-[10px] uppercase tracking-[0.2em] font-sans font-medium transition-all",
+            currentView === "grid" ? "bg-dark text-white" : "text-dark hover:bg-black/5"
+          )}
+        >
+          Grid
+        </Link>
+        <Link 
+          href={`${pathname}?${createQueryString("view", "timeline")}`}
+          className={cn(
+            "px-4 py-2 text-[10px] uppercase tracking-[0.2em] font-sans font-medium border-l border-dark/10 transition-all",
+            currentView === "timeline" ? "bg-dark text-white" : "text-dark hover:bg-black/5"
+          )}
+        >
+          Timeline
+        </Link>
+      </div>
+
       <FilterGroup 
         label={categoryLabel || "Category"} 
         options={categories} 
@@ -160,7 +214,7 @@ export function FilterBar({
       />
       
       <div className="ml-auto flex items-center gap-3">
-        <span className="text-[10px] uppercase tracking-widest font-sans font-semibold text-[#A3A3A3]">Sort by</span>
+        <span className="text-[10px] uppercase tracking-widest font-sans font-medium text-gray opacity-50">Sort by</span>
         <FilterGroup 
           label="Sort" 
           options={sortOptions} 
