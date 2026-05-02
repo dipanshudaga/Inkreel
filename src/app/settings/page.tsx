@@ -8,9 +8,10 @@ import Link from "next/link";
 
 export default async function SettingsPage() {
   const session = await auth();
-  if (!session) redirect("/login");
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
 
-  const totalEntries = await db.select({ value: count() }).from(media).where(eq(media.userId, session.user.id));
+  const totalEntries = await db.select({ value: count() }).from(media).where(eq(media.userId, userId));
 
   return (
     <div className="min-h-screen bg-bg text-dark selection:bg-accent selection:text-white pb-20 pt-24 px-10">

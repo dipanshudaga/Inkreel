@@ -9,14 +9,15 @@ export async function GET() {
   if (!session?.user?.id) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
+  const userId = session.user.id;
 
   try {
-    const entries = await db.select().from(media).where(eq(media.userId, session.user.id));
+    const entries = await db.select().from(media).where(eq(media.userId, userId));
     
     const exportData = {
       exportedAt: new Date().toISOString(),
       user: {
-        id: session.user.id,
+        id: userId,
         name: session.user.name,
       },
       entries,

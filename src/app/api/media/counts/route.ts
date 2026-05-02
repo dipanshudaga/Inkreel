@@ -10,12 +10,13 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ watch: 0, read: 0 });
     }
+    const userId = session.user.id;
 
     const watchCount = await db
       .select({ value: count() })
       .from(media)
       .where(and(
-        eq(media.userId, session.user.id),
+        eq(media.userId, userId),
         or(
           eq(media.type, "movie"),
           eq(media.type, "tv"),
@@ -27,7 +28,7 @@ export async function GET() {
       .select({ value: count() })
       .from(media)
       .where(and(
-        eq(media.userId, session.user.id),
+        eq(media.userId, userId),
         or(
           eq(media.type, "book"),
           eq(media.type, "manga")
