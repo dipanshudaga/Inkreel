@@ -16,10 +16,13 @@ interface FilterGroupProps {
   options: FilterOption[];
   paramName: string;
   currentValue: string;
+  align?: "left" | "right";
+  showClear?: boolean;
 }
 
-function FilterGroup({ label, options, paramName, currentValue }: FilterGroupProps) {
+function FilterGroup({ label, options, paramName, currentValue, align, showClear = true }: FilterGroupProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -34,6 +37,12 @@ function FilterGroup({ label, options, paramName, currentValue }: FilterGroupPro
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close dropdown when search params change (navigation happens)
+  const searchParamsString = searchParams.toString();
+  useEffect(() => {
+    setIsOpen(false);
+  }, [searchParamsString]);
+
   const createQueryString = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value === "all" || value === "") {
@@ -45,13 +54,16 @@ function FilterGroup({ label, options, paramName, currentValue }: FilterGroupPro
   };
 
   const selectedOption = options.find(o => o.value === currentValue) || { label: label, value: "all" };
-
   const isFiltered = currentValue !== "all" && currentValue !== "";
 
   return (
     <div className="relative flex items-center" ref={containerRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
         className={cn(
           "flex items-center gap-1.5 py-2 px-3 border-hairline transition-colors uppercase tracking-widest font-sans font-medium text-[10px]",
           isFiltered ? "text-accent border-accent bg-white" : "text-dark bg-white hover:bg-black/5",
@@ -62,11 +74,12 @@ function FilterGroup({ label, options, paramName, currentValue }: FilterGroupPro
         <ChevronDown size={12} className={cn("transition-transform", isOpen && "rotate-180")} />
       </button>
 
-      {isFiltered && (
+      {showClear && isFiltered && (
         <Link
           href={`${pathname}?${createQueryString("all")}`}
           className="flex items-center justify-center h-[31px] px-2 border-hairline border-l-0 text-accent hover:bg-accent hover:text-white transition-colors"
           title="Clear filter"
+          scroll={false}
         >
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -76,20 +89,23 @@ function FilterGroup({ label, options, paramName, currentValue }: FilterGroupPro
       )}
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-white border-hairline z-[60] py-2 animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="max-h-64 overflow-y-auto">
+        <div className={cn(
+          "absolute top-full mt-1 w-60 bg-white border-hairline z-[60] py-1 animate-in fade-in slide-in-from-top-1 duration-200 shadow-2xl",
+          align === "right" ? "right-0" : "left-0"
+        )}>
+          <div className="max-h-80 overflow-y-auto">
             {options.map((option) => (
               <Link
                 key={option.value}
                 href={`${pathname}?${createQueryString(option.value)}`}
-                onClick={() => setIsOpen(false)}
+                scroll={false}
                 className={cn(
-                  "flex items-center justify-between px-4 py-2 hover:bg-surface text-[11px] uppercase tracking-wider font-sans transition-colors",
-                  currentValue === option.value ? "text-accent font-medium" : "text-dark"
+                  "w-full flex items-center justify-between px-4 py-2.5 hover:bg-surface text-[10px] uppercase tracking-wider font-sans transition-colors text-left",
+                  currentValue === option.value ? "text-accent font-medium bg-surface/50" : "text-dark"
                 )}
               >
-                {option.label}
-                {currentValue === option.value && <Check size={12} />}
+                <span>{option.label}</span>
+                {currentValue === option.value && <Check size={12} className="text-accent" />}
               </Link>
             ))}
           </div>
@@ -160,12 +176,11 @@ export function FilterBar({
     { label: "When Logged (Oldest)", value: "logged_asc" },
     { label: "Release Date (Newest)", value: "release_desc" },
     { label: "Release Date (Oldest)", value: "release_asc" },
-    { label: "Rating (High to Low)", value: "rating_desc" },
     { label: "Title (A-Z)", value: "title_asc" },
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-3 py-4 bg-bg">
+    <div className="flex flex-wrap items-center gap-3 py-4 bg-bg relative z-10">
       {/* View Switcher */}
       <div className="flex border-hairline bg-white overflow-hidden mr-2">
         <Link 
@@ -188,38 +203,46 @@ export function FilterBar({
         </Link>
       </div>
 
+
+
       <FilterGroup 
         label={categoryLabel || "Category"} 
         options={categories} 
         paramName="filter" 
         currentValue={currentFilters.filter} 
+        align="left"
       />
       <FilterGroup 
         label={typeLabel || "Type"} 
         options={types} 
         paramName="type" 
         currentValue={currentFilters.type} 
+        align="left"
       />
       <FilterGroup 
         label="Genre" 
         options={[{ label: "Any Genre", value: "all" }, ...genres.map(g => ({ label: g, value: g }))]} 
         paramName="genre" 
         currentValue={currentFilters.genre} 
+        align="left"
       />
       <FilterGroup 
         label="Decade" 
         options={[{ label: "Any Decade", value: "all" }, ...decades.map(d => ({ label: d, value: d }))]} 
         paramName="decade" 
         currentValue={currentFilters.decade} 
+        align="left"
       />
       
       <div className="ml-auto flex items-center gap-3">
-        <span className="text-[10px] uppercase tracking-widest font-sans font-medium text-gray opacity-50">Sort by</span>
+        <span className="text-[10px] uppercase tracking-widest font-sans font-medium text-gray opacity-50">Sort</span>
         <FilterGroup 
           label="Sort" 
           options={sortOptions} 
           paramName="sort" 
           currentValue={currentFilters.sort} 
+          align="right"
+          showClear={false}
         />
       </div>
     </div>

@@ -16,7 +16,7 @@ export function ImportClient() {
   const setItems = useMediaStore(state => state.setItems);
   const [state, setState] = useState<ImportState>("idle");
   const [progress, setProgress] = useState(0);
-  const [verifiedCount, setVerifiedCount] = useState(0);
+  const [processedCount, setProcessedCount] = useState(0);
   const [items, setItemsToReview] = useState<ImportItem[]>([]);
   const [summary, setSummary] = useState<{ watch: number; read: number; total: number }>({ watch: 0, read: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export function ImportClient() {
 
     setState("parsing");
     setError(null);
-    setVerifiedCount(0);
+    setProcessedCount(0);
     let rawItems: ImportItem[] = [];
 
     try {
@@ -74,7 +74,7 @@ export function ImportClient() {
             res.results?.forEach((match, index) => {
               const originalItem = currentBatch[index];
               const itemToUpdate = newItems.find(it => it.externalId === originalItem.externalId);
-              
+
               if (itemToUpdate) {
                 if (match) {
                   itemToUpdate.posterUrl = match.posterUrl;
@@ -90,7 +90,7 @@ export function ImportClient() {
             });
             return newItems;
           });
-          setVerifiedCount(prev => Math.min(prev + batchSize, matchLimit));
+          setProcessedCount(prev => Math.min(prev + batchSize, matchLimit));
         }
         setProgress(Math.round(((i + batchSize) / matchLimit) * 100));
 
@@ -120,10 +120,12 @@ export function ImportClient() {
     }
 
     setIsSearchingRematch(true);
+    // Clear previous results immediately to prevent stale UI
+    if (immediate) setRematchResults([]);
 
     const performSearch = async () => {
       const item = items.find(it => it.externalId === rematchId);
-      const res = await searchMediaAction(val, item?.category || "watch", year);
+      const res = await searchMediaAction(val, item?.category || "watch", year, item?.creator);
       if (res.success) setRematchResults(res.results);
       setIsSearchingRematch(false);
     };
@@ -139,11 +141,13 @@ export function ImportClient() {
 
   useEffect(() => {
     if (rematchId !== null && rematchId !== lastRematchId.current) {
+      lastRematchId.current = rematchId;
       const item = items.find(it => it.externalId === rematchId);
       if (item) handleManualSearch(item.title, item.year, true);
+    } else if (rematchId === null) {
+      lastRematchId.current = null;
     }
-    lastRematchId.current = rematchId;
-  }, [rematchId, handleManualSearch]);
+  }, [rematchId, items, handleManualSearch]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -213,7 +217,7 @@ export function ImportClient() {
             <div className="flex items-center gap-4">
               <h2 className="text-3xl font-serif italic">Upload Source</h2>
             </div>
-            <div className="border-2 border-dashed p-20 flex flex-col items-center justify-center gap-6 border-dark/20 hover:border-accent bg-surface/10 relative cursor-pointer group h-full">
+            <div className="border-2 border-dashed flex flex-col items-center justify-center gap-6 border-dark/20 hover:border-accent bg-surface/10 relative cursor-pointer group h-[320px]">
               <div className="size-16 rounded-full border border-dark/10 flex items-center justify-center mb-4 group-hover:bg-dark group-hover:text-white transition-all duration-500">
                 <Upload size={20} strokeWidth={1.5} />
               </div>
@@ -232,7 +236,8 @@ export function ImportClient() {
               <div className="flex flex-col gap-1">
                 <h2 className="text-3xl font-serif italic">Review Matches</h2>
                 <p className="text-[10px] uppercase tracking-widest font-medium opacity-40">
-                  {state === "parsing" ? "Analyzing structure..." : `Verified ${verifiedCount} of ${Math.min(summary.total, 500)} titles`}
+                  {state === "parsing" ? "Analyzing structure..." :
+                    `Verified ${items.filter(it => it.matchedId && it.matchedId !== 'not-found').length} of ${summary.total} titles`}
                 </p>
               </div>
             </div>
@@ -269,7 +274,7 @@ export function ImportClient() {
               ))}
             </div>
 
-            <div className="mt-20 flex flex-col items-center gap-8 pt-20">
+            <div className="mt-12 flex flex-col items-center gap-8 pt-12 border-t border-dark/5">
               <div className="flex flex-col items-center gap-2 text-center">
                 <h3 className="text-4xl font-serif italic">Ready to sync?</h3>
                 <p className="text-xs opacity-40 uppercase tracking-widest font-medium max-w-sm">
@@ -306,7 +311,7 @@ export function ImportClient() {
               <CheckCircle2 size={40} />
             </div>
             <div className="flex flex-col items-center gap-2">
-              <h3 className="text-4xl font-serif font-medium italic">Archive Synchronized.</h3>
+              <h3 className="text-4xl font-serif font-medium italic">Import Completed.</h3>
               <p className="text-sm opacity-50 max-w-sm">
                 {summary.total} titles have been perfectly matched and integrated into your private diary.
               </p>
@@ -341,8 +346,8 @@ export function ImportClient() {
       </div>
 
       {!isWide && (
-        <aside className="flex flex-col gap-12 pt-16">
-          <div className="p-10 border border-hairline bg-surface flex flex-col gap-8 h-full">
+        <aside className="flex flex-col pt-16">
+          <div className="p-10 border border-hairline bg-surface flex flex-col justify-center gap-8 h-[320px]">
             <span className="text-[10px] uppercase tracking-[0.3em] font-medium text-gray border-b border-dark/10 pb-4">Data Sources</span>
             <div className="flex flex-col gap-10">
               <div className="flex flex-col gap-4">
@@ -405,7 +410,7 @@ export function ImportClient() {
               </div>
 
               {rematchResults.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {rematchResults.map((res: any) => (
                     <MediaCard
                       key={res.id}

@@ -14,9 +14,15 @@ export async function parseGoodreadsCsv(file: File): Promise<ImportItem[]> {
     if (!title) return null;
 
     let status = "completed";
-    const shelves = row.Shelves || row.Bookshelves || "";
-    if (shelves.includes("to-read") || shelves.includes("want-to-read")) {
+    const shelves = (row.Shelves || row.Bookshelves || "").toLowerCase();
+    const exclusiveShelf = (row["Exclusive Shelf"] || "").toLowerCase();
+
+    if (shelves.includes("to-read") || shelves.includes("want-to-read") || exclusiveShelf === "to-read") {
       status = "shelf";
+    } else if (shelves.includes("currently-reading") || exclusiveShelf === "currently-reading") {
+      status = "progress";
+    } else if (shelves.includes("read") || exclusiveShelf === "read") {
+      status = "completed";
     }
 
     const year = row["Year Published"] || row["Original Publication Year"] || "";

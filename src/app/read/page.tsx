@@ -1,12 +1,13 @@
 import { db } from "@/lib/db";
 import { media } from "@/lib/db/schema";
-import { eq, or, and, desc, asc, like, gte, lte } from "drizzle-orm";
+import { eq, or, and, desc, asc, ilike, gte, lte, ne } from "drizzle-orm";
 import { FilterBar } from "@/components/item/filter-bar";
 import { StoreInitializer } from "@/components/item/store-initializer";
 import { DiaryGrid } from "@/components/diary/diary-grid";
 import { DiaryTimeline } from "@/components/diary/diary-timeline";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { DiarySearch } from "@/components/diary/diary-search";
 
 
 interface ReadDiaryProps {
@@ -16,6 +17,8 @@ interface ReadDiaryProps {
     genre?: string;
     decade?: string;
     sort?: string;
+    view?: string;
+    q?: string;
   }>;
 }
 
@@ -29,14 +32,24 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
     genre = "all",
     decade = "all",
     sort = "logged_desc",
-    view = "grid"
+    view = "grid",
+    q = ""
   } = await searchParams;
 
   const conditions: any[] = [];
   
   // Base category and user filter
   conditions.push(eq(media.userId, session.user.id));
+  conditions.push(ne(media.status, "none"));
   conditions.push(or(eq(media.type, "book"), eq(media.type, "manga")));
+
+  // Search filter
+  if (q) {
+    conditions.push(or(
+      ilike(media.title, `%${q}%`),
+      ilike(media.creator, `%${q}%`)
+    ));
+  }
 
   // Type filter
   if (type !== "all") {
@@ -45,7 +58,7 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
 
   // Genre filter
   if (genre !== "all") {
-    conditions.push(like(media.genres, `%${genre}%`));
+    conditions.push(ilike(media.genres, `%${genre}%`));
   }
 
   // Decade filter
@@ -56,14 +69,23 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
   }
 
   // Sorting
-  let orderBy: any = desc(media.id);
-  if (sort === "release_desc") orderBy = desc(media.releaseYear);
-  else if (sort === "release_asc") orderBy = asc(media.releaseYear);
-  else if (sort === "title_asc") orderBy = asc(media.title);
+  let orderBy: any[];
+  if (sort === "logged_asc") {
+    orderBy = [asc(media.createdAt), asc(media.id)];
+  } else if (sort === "release_desc") {
+    orderBy = [desc(media.releaseYear), asc(media.title), asc(media.id)];
+  } else if (sort === "release_asc") {
+    orderBy = [asc(media.releaseYear), asc(media.title), asc(media.id)];
+  } else if (sort === "title_asc") {
+    orderBy = [asc(media.title), asc(media.id)];
+  } else {
+    // Default: logged_desc
+    orderBy = [desc(media.createdAt), desc(media.id)];
+  }
 
   const readItems = await db.query.media.findMany({
     where: and(...conditions),
-    orderBy: [orderBy],
+    orderBy: orderBy,
   });
 
   // Fetch all user's genres and decades for filter options
@@ -91,19 +113,28 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
             </h1>
             <div className="h-px grow bg-dark/10" />
           </div>
-          <p className="text-xl font-serif italic opacity-40 max-w-xl">
-            An archival log of your literary journeys and written archives.
-          </p>
+          <div className="flex items-end justify-between gap-12">
+            <p className="text-xl font-serif italic opacity-40 max-w-xl">
+              An archival log of your literary journeys and written archives.
+            </p>
+            <DiarySearch currentQuery={q} />
+          </div>
         </header>
 
         {/* Sticky Filter Container */}
-        <div className="flex flex-col pb-4 gap-4 px-12 border-b-hairline bg-bg sticky top-0 z-50">
+        <div className="flex flex-col pb-4 gap-4 px-12 border-b-hairline bg-bg sticky top-0 z-[100]">
           <FilterBar 
             genres={uniqueGenres}
             decades={uniqueDecades}
             currentFilters={{ filter, type, genre, decade, sort }}
             currentView={view}
-            categoryLabel="Shelf"
+            categoryLabel="Status"
+            categoryOptions={[
+              { label: "All", value: "all" },
+              { label: "To Read", value: "shelf" },
+              { label: "Reading", value: "reading" },
+              { label: "Read", value: "completed" },
+            ]}
             typeLabel="Format"
           />
         </div>

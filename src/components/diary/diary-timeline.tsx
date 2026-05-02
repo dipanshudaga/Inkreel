@@ -99,7 +99,7 @@ export function DiaryTimeline({ initialItems, currentFilter, category }: DiaryTi
             </button>
 
             {!isCollapsed && (
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12 animate-in fade-in slide-in-from-top-4 duration-700 fill-mode-forwards">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12 animate-in fade-in slide-in-from-top-4 duration-700 fill-mode-forwards">
                 {groupedByYear[year].map((item) => (
                   <MediaCard key={item.id} item={item} />
                 ))}

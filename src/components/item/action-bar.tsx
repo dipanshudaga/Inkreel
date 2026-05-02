@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Eye, Heart, Loader2, Check, Bookmark } from "lucide-react";
+import { Plus, Eye, Heart, Loader2, Check, Bookmark, BookOpen } from "lucide-react";
 import { saveMediaAction, updateMediaAction } from "@/lib/actions/media";
 import { useRouter } from "next/navigation";
 import { useMediaStore } from "@/store/use-media-store";
@@ -38,6 +38,7 @@ export function ActionBar({
 
   const isCompleted = status === "completed" || status === "loved";
   const isPlanned = status === "watchlist" || status === "shelf";
+  const isReading = status === "reading";
   const isLoved = status === "loved";
 
   const handleAction = async (action: string) => {
@@ -56,6 +57,8 @@ export function ActionBar({
         nextStatus = isCompleted ? null : "completed";
       } else if (action === "planned") {
         nextStatus = isPlanned ? null : (category === "read" ? "shelf" : "watchlist");
+      } else if (action === "reading") {
+        nextStatus = isReading ? null : "reading";
       } else if (action === "loved") {
         nextStatus = isLoved ? "completed" : "loved";
       }
@@ -133,22 +136,22 @@ export function ActionBar({
     return (
       <div className="flex border-x-hairline border-b-hairline divide-hairline h-11 bg-bg w-full">
         <button
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("completed"); }}
-          className={cn("flex-1 flex items-center justify-center transition-colors", isCompleted ? "bg-dark text-white" : "text-dark hover:bg-dark/10")}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction(isRead ? "planned" : "completed"); }}
+          className={cn("flex-1 flex items-center justify-center transition-colors", (isRead ? isPlanned : isCompleted) ? "bg-dark text-white" : "text-dark hover:bg-dark/10")}
         >
-          {loading === "completed" ? <Loader2 size={16} className="animate-spin" /> : (isRead ? <Check size={20} strokeWidth={2} /> : <Eye size={20} strokeWidth={2} />)}
+          {loading === (isRead ? "planned" : "completed") ? <Loader2 size={16} className="animate-spin" /> : (isRead ? <Bookmark size={18} strokeWidth={2} /> : (isRead ? <Check size={20} strokeWidth={2} /> : <Eye size={20} strokeWidth={2} />))}
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("planned"); }}
-          className={cn("flex-1 flex items-center justify-center transition-colors", isPlanned ? "bg-dark text-white" : "text-dark hover:bg-dark/10")}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction(isRead ? "reading" : "planned"); }}
+          className={cn("flex-1 flex items-center justify-center transition-colors", (isRead ? isReading : isPlanned) ? "bg-dark text-white" : "text-dark hover:bg-dark/10")}
         >
-          {loading === "planned" ? <Loader2 size={16} className="animate-spin" /> : <Bookmark size={18} strokeWidth={2} />}
+          {loading === (isRead ? "reading" : "planned") ? <Loader2 size={16} className="animate-spin" /> : (isRead ? <BookOpen size={18} strokeWidth={2} /> : <Bookmark size={18} strokeWidth={2} />)}
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction("loved"); }}
-          className={cn("flex-1 flex items-center justify-center transition-colors", isLoved ? "bg-accent text-white" : "text-dark hover:bg-dark/10")}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAction(isRead ? "completed" : "loved"); }}
+          className={cn("flex-1 flex items-center justify-center transition-colors", (isRead ? isCompleted : isLoved) ? (isRead ? "bg-dark text-white" : "bg-accent text-white") : "text-dark hover:bg-dark/10")}
         >
-          {loading === "loved" ? <Loader2 size={16} className="animate-spin" /> : <Heart size={18} strokeWidth={2} fill={isLoved ? "currentColor" : "none"} />}
+          {loading === (isRead ? "completed" : "loved") ? <Loader2 size={16} className="animate-spin" /> : (isRead ? <Check size={20} strokeWidth={2} /> : <Heart size={18} strokeWidth={2} fill={isLoved ? "currentColor" : "none"} />)}
         </button>
       </div>
     );
@@ -156,25 +159,50 @@ export function ActionBar({
 
   return (
     <div className="flex items-center justify-center gap-8 w-full">
-      <Button 
-        action="completed" 
-        active={isCompleted} 
-        icon={isRead ? Check : Eye} 
-        label={isRead ? "Read" : "Watched"} 
-      />
-      <Button 
-        action="planned" 
-        active={isPlanned} 
-        icon={Bookmark} 
-        label={isRead ? "Shelf" : "Watchlist"} 
-      />
-      <Button 
-        action="loved" 
-        active={isLoved} 
-        icon={Heart} 
-        label="Love" 
-        color="accent"
-      />
+      {isRead ? (
+        <>
+          <Button 
+            action="planned" 
+            active={isPlanned} 
+            icon={Bookmark} 
+            label="To Read" 
+          />
+          <Button 
+            action="reading" 
+            active={isReading} 
+            icon={BookOpen} 
+            label="Reading" 
+          />
+          <Button 
+            action="completed" 
+            active={isCompleted} 
+            icon={Check} 
+            label="Read" 
+          />
+        </>
+      ) : (
+        <>
+          <Button 
+            action="completed" 
+            active={isCompleted} 
+            icon={Eye} 
+            label="Watched" 
+          />
+          <Button 
+            action="planned" 
+            active={isPlanned} 
+            icon={Bookmark} 
+            label="Watchlist" 
+          />
+          <Button 
+            action="loved" 
+            active={isLoved} 
+            icon={Heart} 
+            label="Love" 
+            color="accent"
+          />
+        </>
+      )}
     </div>
   );
 }

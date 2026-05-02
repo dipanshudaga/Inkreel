@@ -3,10 +3,12 @@
 import { db } from "@/lib/db";
 import { media } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { searchMovies } from "@/lib/api/tmdb";
-import { searchBooks } from "@/lib/api/google-books";
+import { matchWatchItem } from "@/lib/algorithms/movie-matcher";
+import { matchReadItem } from "@/lib/algorithms/book-matcher";
+import { searchMoviesForRematch } from "@/lib/algorithms/movie-searcher";
+import { searchBooksForRematch } from "@/lib/algorithms/book-searcher";
 
 export async function saveMediaAction(item: any) {
   const session = await auth();
@@ -24,6 +26,16 @@ export async function saveMediaAction(item: any) {
       type: item.type || (item.category === 'read' ? 'book' : 'movie'),
       externalId: item.externalId || item.id,
       posterUrl: item.posterUrl,
+      backdropUrl: item.backdropUrl,
+      tagline: item.tagline,
+      subtitle: item.subtitle,
+      description: item.description,
+      creator: item.creator,
+      genres: Array.isArray(item.genres) ? item.genres.join(', ') : item.genres,
+      format: item.format,
+      language: item.language,
+      runtime: item.runtime,
+      pageCount: item.pageCount,
       releaseYear: typeof item.year === 'string' ? parseInt(item.year) : (item.year || item.releaseYear),
       watchlistedAt: (status === "watchlist" || status === "shelf") ? now : null,
       completedAt: (status === "completed" || status === "loved") ? now : null,
@@ -48,12 +60,17 @@ export async function updateMediaAction(externalId: string, status: string) {
     const identifier = isUuid ? media.id : media.externalId;
 
     if (status === "none") {
-      await db.delete(media).where(
-        and(
-          eq(media.userId, session.user.id),
-          eq(identifier, externalId)
-        )
-      );
+      // Soft-delete: update status to "none" instead of deleting record
+      // This keeps the metadata in DB so the detail page still works 
+      // even after unselecting from collection.
+      await db.update(media)
+        .set({ status: "none" })
+        .where(
+          and(
+            eq(media.userId, session.user.id),
+            eq(identifier, externalId)
+          )
+        );
     } else {
       const now = new Date();
       const updateData: any = { status };
@@ -93,20 +110,80 @@ export async function saveImportedMediaAction(items: any[]) {
 
   try {
     const now = new Date();
-    const values = items.map(item => ({
-      userId: session.user.id,
-      title: item.title,
-      category: item.category,
-      status: item.status,
-      externalId: item.externalId,
-      posterUrl: item.posterUrl,
-      releaseYear: item.year,
-      watchlistedAt: (item.status === "watchlist" || item.status === "shelf") ? now : null,
-      completedAt: (item.status === "completed" || item.status === "loved") ? now : null,
-      favoritedAt: item.status === "loved" ? now : null,
-    }));
+    
+    // 1. Fetch existing media to handle status progression logic
+    const existingMedia = await db
+      .select({ externalId: media.externalId, status: media.status })
+      .from(media)
+      .where(eq(media.userId, session.user.id));
+    
+    const existingMap = new Map(existingMedia.map(m => [m.externalId, m.status]));
+    const STATUS_WEIGHTS: Record<string, number> = {
+      "watchlist": 1,
+      "shelf": 1,
+      "progress": 2,
+      "completed": 3,
+      "loved": 4
+    };
 
-    await db.insert(media).values(values).onConflictDoNothing();
+    const toInsert = [];
+    const toUpdate = [];
+
+    for (const item of items) {
+      if (!item.matchedId || item.matchedId === "not-found") continue;
+      
+      const currentStatus = existingMap.get(item.matchedId);
+      const newStatus = item.status || "completed";
+      
+      const data = {
+        userId: session.user.id,
+        title: item.title,
+        category: item.category,
+        status: newStatus,
+        type: item.type || (item.category === "read" ? "book" : "movie"),
+        externalId: item.matchedId,
+        posterUrl: item.posterUrl,
+        backdropUrl: item.backdropUrl,
+        tagline: item.tagline,
+        subtitle: item.subtitle,
+        description: item.description,
+        creator: item.creator,
+        genres: Array.isArray(item.genres) ? item.genres.join(', ') : item.genres,
+        format: item.format,
+        language: item.language,
+        runtime: item.runtime,
+        pageCount: item.pageCount,
+        releaseYear: typeof item.year === 'string' ? parseInt(item.year) : item.year,
+        isDocumentary: item.isDocumentary ? "true" : "false",
+        watchlistedAt: (newStatus === "watchlist" || newStatus === "shelf") ? now : null,
+        completedAt: (newStatus === "completed" || newStatus === "loved") ? now : null,
+        favoritedAt: newStatus === "loved" ? now : null,
+      };
+
+      if (!currentStatus) {
+        toInsert.push(data);
+      } else {
+        // Only update if the new status is "higher" on the ladder or if it's the same (to update metadata)
+        const currentWeight = STATUS_WEIGHTS[currentStatus] || 0;
+        const newWeight = STATUS_WEIGHTS[newStatus] || 0;
+        
+        if (newWeight >= currentWeight) {
+          toUpdate.push(data);
+        }
+      }
+    }
+
+    // 2. Batch Insert new items
+    if (toInsert.length > 0) {
+      await db.insert(media).values(toInsert as any);
+    }
+
+    // 3. Batch Update existing items (Sequential for safety in server action)
+    for (const item of toUpdate) {
+      await db.update(media)
+        .set(item)
+        .where(and(eq(media.userId, session.user.id), eq(media.externalId, item.externalId)));
+    }
     
     revalidatePath("/watch");
     revalidatePath("/read");
@@ -126,7 +203,7 @@ export async function getUserMediaAction() {
     const userMedia = await db
       .select()
       .from(media)
-      .where(eq(media.userId, session.user.id));
+      .where(and(eq(media.userId, session.user.id), ne(media.status, "none")));
     const items = userMedia.map(m => ({
       id: m.id,
       externalId: m.externalId,
@@ -149,26 +226,52 @@ import { searchForMedia } from "@/lib/algorithms/media-searcher";
 
 export async function searchMediaAction(query: string, category: "watch" | "read", year?: string, author?: string) {
   try {
-    const results = await searchForMedia(query, category, year, author);
-    return { success: true, results };
+    if (category === "watch") {
+      const results = await searchMoviesForRematch(query, year);
+      return { success: true, results };
+    } else {
+      const results = await searchBooksForRematch(query, author, year);
+      return { success: true, results };
+    }
   } catch (error) {
     console.error("Search media action failed:", error);
     return { success: false, results: [] };
   }
 }
 
-import { matchMedia, MatchQuery } from "@/lib/algorithms/media-matcher";
+export interface MatchQuery {
+  query: string;
+  category: "watch" | "read";
+  author?: string;
+  isbn?: string;
+  year?: string;
+}
+
+export async function matchMedia(q: MatchQuery) {
+  const { category, query, author, isbn, year } = q;
+  const titleOnly = query.trim();
+
+  try {
+    if (category === "watch") {
+      return await matchWatchItem(titleOnly, year);
+    } else {
+      return await matchReadItem(titleOnly, author, isbn, year);
+    }
+  } catch (error) {
+    console.error(`[Matcher] Failed to match ${query}:`, error);
+    return null;
+  }
+}
 
 export async function batchSearchMediaAction(queries: MatchQuery[]) {
   try {
-    const results: any[] = [];
-    for (let i = 0; i < queries.length; i++) {
-      const result = await matchMedia(queries[i]);
-      results.push(result);
-      
-      // Small staggered delay to prevent rate-limiting or concurrency issues
-      if (i < queries.length - 1) await new Promise(r => setTimeout(r, 200));
-    }
+    // Process the entire batch with a small staggered delay to respect rate limits
+    const results = await Promise.all(
+      queries.map(async (q, i) => {
+        if (i > 0) await new Promise(r => setTimeout(r, i * 100));
+        return matchMedia(q);
+      })
+    );
     
     return { success: true, results };
   } catch (error) {

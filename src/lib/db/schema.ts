@@ -1,4 +1,4 @@
-import { pgTable, text, integer, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, uuid, uniqueIndex } from "drizzle-orm/pg-core";
 
 // 1. User Identity
 export const users = pgTable("users", {
@@ -54,7 +54,11 @@ export const media = pgTable("media", {
   favoritedAt: timestamp("favorited_at"),
   
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (t) => [
+  {
+    uniqueMedia: uniqueIndex("unique_user_media").on(t.userId, t.externalId),
+  }
+]);
 
 // 3. Activity Logs
 export const logs = pgTable("logs", {

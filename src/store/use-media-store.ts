@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface MediaItemState {
+  id?: string;
   status: string | null;
   category: "watch" | "read";
 }
@@ -30,7 +31,7 @@ export const useMediaStore = create<MediaStore>()(
           return {
             items: {
               ...state.items,
-              [id]: { status, category: finalCategory },
+              [id]: { id, status, category: finalCategory },
             },
           };
         });
@@ -47,7 +48,9 @@ export const useMediaStore = create<MediaStore>()(
         set((state) => {
           const updatedItems = { ...state.items };
           newItems.forEach((item) => {
-            updatedItems[item.id || item.externalId] = {
+            const key = item.id || item.externalId;
+            updatedItems[key] = {
+              id: item.id,
               status: item.status,
               category: item.category as "watch" | "read",
             };
@@ -60,7 +63,9 @@ export const useMediaStore = create<MediaStore>()(
         set(() => {
           const updatedItems: Record<string, MediaItemState> = {};
           newItems.forEach((item) => {
-            updatedItems[item.id || item.externalId] = {
+            const key = item.id || item.externalId;
+            updatedItems[key] = {
+              id: item.id,
               status: item.status,
               category: item.category as "watch" | "read",
             };

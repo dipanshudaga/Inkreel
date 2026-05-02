@@ -1,12 +1,13 @@
 import { db } from "@/lib/db";
 import { media } from "@/lib/db/schema";
-import { eq, or, and, desc, asc, like, gte, lte } from "drizzle-orm";
+import { eq, or, and, desc, asc, ilike, gte, lte, ne } from "drizzle-orm";
 import { FilterBar } from "@/components/item/filter-bar";
 import { StoreInitializer } from "@/components/item/store-initializer";
 import { DiaryGrid } from "@/components/diary/diary-grid";
 import { DiaryTimeline } from "@/components/diary/diary-timeline";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { DiarySearch } from "@/components/diary/diary-search";
 
 
 interface WatchDiaryProps {
@@ -16,6 +17,8 @@ interface WatchDiaryProps {
     genre?: string;
     decade?: string;
     sort?: string;
+    view?: string;
+    q?: string;
   }>;
 }
 
@@ -29,19 +32,29 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
     genre = "all",
     decade = "all",
     sort = "logged_desc",
-    view = "grid"
+    view = "grid",
+    q = ""
   } = await searchParams;
 
   const conditions: any[] = [];
   
   // Base category and user filter
   conditions.push(eq(media.userId, session.user.id));
+  conditions.push(ne(media.status, "none"));
   conditions.push(or(eq(media.type, "movie"), eq(media.type, "anime"), eq(media.type, "tv")));
+
+  // Search filter
+  if (q) {
+    conditions.push(or(
+      ilike(media.title, `%${q}%`),
+      ilike(media.creator, `%${q}%`)
+    ));
+  }
 
   // Type filter
   if (type !== "all") {
     if (type === "documentary") {
-      // conditions.push(eq(media.isDocumentary, "true"));
+      conditions.push(eq(media.isDocumentary, "true"));
     } else {
       conditions.push(eq(media.type, type));
     }
@@ -49,7 +62,7 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
 
   // Genre filter
   if (genre !== "all") {
-    conditions.push(like(media.genres, `%${genre}%`));
+    conditions.push(ilike(media.genres, `%${genre}%`));
   }
 
   // Decade filter
@@ -60,27 +73,36 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
   }
 
   // Sorting
-  let orderBy: any = desc(media.id); // Default to ID since we removed updatedAt
-  if (sort === "release_desc") orderBy = desc(media.releaseYear);
-  else if (sort === "release_asc") orderBy = asc(media.releaseYear);
-  else if (sort === "title_asc") orderBy = asc(media.title);
+  let orderBy: any[];
+  if (sort === "logged_asc") {
+    orderBy = [asc(media.createdAt), asc(media.id)];
+  } else if (sort === "release_desc") {
+    orderBy = [desc(media.releaseYear), asc(media.title), asc(media.id)];
+  } else if (sort === "release_asc") {
+    orderBy = [asc(media.releaseYear), asc(media.title), asc(media.id)];
+  } else if (sort === "title_asc") {
+    orderBy = [asc(media.title), asc(media.id)];
+  } else {
+    // Default: logged_desc
+    orderBy = [desc(media.createdAt), desc(media.id)];
+  }
 
   const watchItems = await db.query.media.findMany({
     where: and(...conditions),
-    orderBy: [orderBy],
+    orderBy: orderBy,
   });
 
-  // Fetch all user's genres and decades for filter options
-  const allUserMedia = await db.query.media.findMany({
-    where: and(
+  // Optimized: Fetch only necessary columns for filters to reduce memory/transfer
+  const filterOptions = await db
+    .select({ genres: media.genres, releaseYear: media.releaseYear })
+    .from(media)
+    .where(and(
       eq(media.userId, session.user.id),
       or(eq(media.type, "movie"), eq(media.type, "anime"), eq(media.type, "tv"))
-    ),
-    columns: { genres: true, releaseYear: true }
-  });
+    ));
 
-  const uniqueGenres = [...new Set(allUserMedia.flatMap(m => m.genres?.split(',').map(g => g.trim()) || []))].filter(Boolean).sort();
-  const uniqueYears = [...new Set(allUserMedia.map(m => m.releaseYear).filter(Boolean) as number[])].sort((a, b) => b - a);
+  const uniqueGenres = [...new Set(filterOptions.flatMap(m => m.genres?.split(',').map(g => g.trim()) || []))].filter(Boolean).sort();
+  const uniqueYears = [...new Set(filterOptions.map(m => m.releaseYear).filter(Boolean) as number[])].sort((a, b) => b - a);
   const uniqueDecades = [...new Set(uniqueYears.map(y => Math.floor(y / 10) * 10))].map(d => `${d}s`);
 
   return (
@@ -95,13 +117,16 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
             </h1>
             <div className="h-px grow bg-dark/10" />
           </div>
-          <p className="text-xl font-serif italic opacity-40 max-w-xl">
-            A curated chronicle of your cinematic and broadcast explorations.
-          </p>
+          <div className="flex items-end justify-between gap-12">
+            <p className="text-xl font-serif italic opacity-40 max-w-xl">
+              A curated chronicle of your cinematic and broadcast explorations.
+            </p>
+            <DiarySearch currentQuery={q} />
+          </div>
         </header>
 
         {/* Sticky Filter Container */}
-        <div className="flex flex-col pb-4 gap-4 px-12 border-b-hairline bg-bg sticky top-0 z-50">
+        <div className="flex flex-col pb-4 gap-4 px-12 border-b-hairline bg-bg sticky top-0 z-[100]">
           <FilterBar 
             genres={uniqueGenres}
             decades={uniqueDecades}

@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "./sign-out-button";
 import { ProfileForm } from "./profile-form";
-import { GoalsForm } from "./goals-form";
 import { db } from "@/lib/db";
 import { media, users } from "@/lib/db/schema";
 import { Download, Trash2 } from "lucide-react";
@@ -17,28 +16,7 @@ export default async function AccountPage() {
   const [user] = await db.select().from(users).where(eq(users.id, session.user.id));
   if (!user) redirect("/login");
 
-  // Fetch stats for the current year
-  const currentYear = new Date().getFullYear();
-  const startOfYear = new Date(currentYear, 0, 1);
-  const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
 
-  const stats = await db.select({
-    category: media.category,
-    count: sql<number>`count(*)::int`,
-  })
-  .from(media)
-  .where(
-    and(
-      eq(media.userId, user.id),
-      eq(media.status, "completed"),
-      gte(media.completedAt, startOfYear),
-      lte(media.completedAt, endOfYear)
-    )
-  )
-  .groupBy(media.category);
-
-  const completedMovies = stats.find(s => s.category === 'watch')?.count || 0;
-  const completedBooks = stats.find(s => s.category === 'read')?.count || 0;
 
   return (
     <div className="min-h-screen bg-bg text-dark selection:bg-accent selection:text-white pb-20 pt-24 px-10">
@@ -62,21 +40,7 @@ export default async function AccountPage() {
           
           {/* Left Column: The Ledger */}
           <div className="w-full lg:w-[60%] flex flex-col lg:border-r-hairline">
-            {/* Section 01: Progress & Goals */}
-            <div className="p-10 lg:p-14 flex flex-col gap-12 border-b-hairline">
-              <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-serif italic">Yearly Objectives</h2>
-              </div>
-
-              <GoalsForm 
-                currentMovieGoal={user.movieGoal} 
-                currentBookGoal={user.bookGoal}
-                completedMovies={completedMovies}
-                completedBooks={completedBooks}
-              />
-            </div>
-
-            {/* Section 02: Settings */}
+            {/* Section 01: Profile */}
             <div className="p-10 lg:p-14 flex flex-col gap-12 border-b-hairline bg-surface/5">
               <div className="flex flex-col gap-2">
                 <h2 className="text-3xl font-serif italic">Profile</h2>

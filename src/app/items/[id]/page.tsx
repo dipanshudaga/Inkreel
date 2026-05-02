@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { db } from "@/lib/db";
 import { media } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -9,6 +10,7 @@ import { notFound, redirect } from "next/navigation";
 import { getMovieById, getTVById } from "@/lib/api/tmdb";
 import { getBookById } from "@/lib/api/google-books";
 import { getAniListById } from "@/lib/api/anilist";
+import { cn } from "@/lib/utils";
 
 interface ItemPageProps {
   params: Promise<{
@@ -20,6 +22,19 @@ const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
 
 async function enrichItem(item: any) {
   if (!item.externalId) return item;
+
+  // Map language code if we have it but no name
+  let languageName = item.language;
+  if (!languageName && item.languageCode) {
+    try {
+      const resolved = languageNames.of(item.languageCode);
+      if (resolved) languageName = resolved;
+    } catch (e) {}
+  }
+
+  // OPTIMIZATION: If we already have the critical metadata, don't hit the external API
+  const hasCriticalData = !!(item.description || item.backdropUrl);
+  if (hasCriticalData) return { ...item, language: languageName || item.language };
 
   try {
     let freshData = null;
@@ -37,7 +52,6 @@ async function enrichItem(item: any) {
 
     if (freshData) {
       // Map language code to name for display
-      let languageName = item.language;
       try {
         const code = freshData.languageCode || item.languageCode;
         if (code && code.length === 2) {
@@ -46,8 +60,7 @@ async function enrichItem(item: any) {
         }
       } catch (e) {}
 
-      return {
-        ...item,
+      const enriched = {
         tagline: item.tagline || freshData.tagline,
         subtitle: item.subtitle || freshData.subtitle,
         format: item.format || freshData.format,
@@ -58,6 +71,38 @@ async function enrichItem(item: any) {
         runtime: item.runtime || freshData.runtime,
         pageCount: item.pageCount || freshData.pageCount,
         backdropUrl: item.backdropUrl || freshData.backdropUrl,
+      };
+
+      // Background persistence: if we have a UUID (it's in our DB) and we just found missing metadata, save it!
+      if (item.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)) {
+        const needsUpdate = !item.backdropUrl && freshData.backdropUrl || 
+                            !item.description && freshData.description ||
+                            !item.tagline && freshData.tagline;
+        
+        if (needsUpdate) {
+          // Perform update in the background (don't await to avoid blocking the request)
+          db.update(media)
+            .set({
+              tagline: enriched.tagline,
+              subtitle: enriched.subtitle,
+              format: enriched.format,
+              language: enriched.language,
+              description: enriched.description,
+              creator: enriched.creator,
+              genres: enriched.genres,
+              runtime: enriched.runtime,
+              pageCount: enriched.pageCount,
+              backdropUrl: enriched.backdropUrl,
+            })
+            .where(eq(media.id, item.id))
+            .then(() => console.log(`[Enrichment] Persisted metadata for ${item.title}`))
+            .catch(err => console.error(`[Enrichment] Failed to persist for ${item.title}`, err));
+        }
+      }
+
+      return {
+        ...item,
+        ...enriched
       };
     }
   } catch (error) {
@@ -117,12 +162,18 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
       {/* Hero Section */}
       <div className="relative h-[45vh] w-full overflow-hidden group bg-surface">
-        {item.backdropUrl ? (
+        {item.backdropUrl || (item.category === 'read' && item.posterUrl) ? (
           <>
-            <img 
-              src={item.backdropUrl} 
-              className="size-full object-cover opacity-20 grayscale"
+            <Image 
+              src={item.backdropUrl || item.posterUrl} 
               alt=""
+              fill
+              priority
+              className={cn(
+                "object-cover opacity-30 grayscale-[0.5] transition-all duration-1000",
+                !item.backdropUrl ? "blur-3xl scale-110" : "blur-0 scale-100"
+              )}
+              sizes="100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent" />
           </>
@@ -148,10 +199,6 @@ export default async function ItemPage({ params }: ItemPageProps) {
 
             {/* Metadata moved below poster */}
             <div className="flex flex-col gap-8 py-8 border-t border-dark/10">
-              <div className="flex flex-col gap-1 pl-4">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-gray">Format</span>
-                <span className="font-serif italic text-lg">{item.format || item.type || "Standard"}</span>
-              </div>
               <div className="flex flex-col gap-1 pl-4">
                 <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-gray">Language</span>
                 <span className="font-serif italic text-lg">{item.language || "Native"}</span>

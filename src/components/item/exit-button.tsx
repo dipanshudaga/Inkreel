@@ -12,8 +12,12 @@ export function ExitButton({ href }: ExitButtonProps) {
 
   const handleExit = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.push(href);
-    router.refresh();
+    // Try to go back in history to preserve scroll position
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(href);
+    }
   };
 
   return (

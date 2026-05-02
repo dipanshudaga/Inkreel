@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMediaStore } from "@/store/use-media-store";
 import { ActionBar } from "./action-bar";
 import { Loader2, Search, Check, X } from "lucide-react";
@@ -21,13 +22,15 @@ interface MediaCardProps {
     isDocumentary?: boolean;
   };
   variant?: "diary" | "import" | "search" | "rematch";
+  index?: number;
   onClick?: () => void;
   onExclude?: () => void;
 }
 
-export function MediaCard({ item, variant = "diary", onClick, onExclude }: MediaCardProps) {
+export function MediaCard({ item, variant = "diary", index = 10, onClick, onExclude }: MediaCardProps) {
   const storeItem = useMediaStore((state) => state.items[item.id || ""]);
-
+  
+  const isPriority = index < 10;
   const isRead = item.category === 'read' || item.type === 'book' || item.type === 'manga';
   const displayYear = item.releaseYear || item.year || "Unknown Year";
   
@@ -39,7 +42,7 @@ export function MediaCard({ item, variant = "diary", onClick, onExclude }: Media
       : item.type === "anime"
         ? "Anime"
         : isRead && author
-          ? (author.length > 20 ? author.substring(0, 17) + "..." : author)
+          ? author
           : (item.type || (isRead ? "Book" : "Movie"));
 
   // Determine if it should be a link or a button
@@ -48,14 +51,14 @@ export function MediaCard({ item, variant = "diary", onClick, onExclude }: Media
 
   const Container = isLink ? Link : "div";
   const containerProps = isLink
-    ? { href, prefetch: false }
+    ? { href, prefetch: true }
     : (variant !== "import" ? { onClick } : {});
 
   return (
     <Container
       {...containerProps as any}
       className={cn(
-        "flex flex-col group gap-0 bg-transparent",
+        "flex flex-col group gap-0 bg-transparent animate-in fade-in slide-in-from-bottom-2 duration-700",
         (isLink || (variant !== "import" && onClick)) && "cursor-pointer"
       )}
     >
@@ -65,10 +68,13 @@ export function MediaCard({ item, variant = "diary", onClick, onExclude }: Media
         variant !== "diary" && "border-b-hairline"
       )}>
         {item.posterUrl ? (
-          <img
+          <Image
             src={item.posterUrl}
-            className="size-full object-cover block"
             alt={item.title}
+            fill
+            priority={isPriority}
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
           <div className="size-full flex flex-col items-center justify-center bg-surface">
@@ -88,7 +94,7 @@ export function MediaCard({ item, variant = "diary", onClick, onExclude }: Media
         )}
 
         {/* Action Overlay (Import/Rematch) */}
-        {(variant === "import" || variant === "rematch") && (item.posterUrl || item.matched === false) && (
+        {(variant === "import" || variant === "rematch") && (
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6 z-20">
             {variant === "import" && onExclude && (
               <button
@@ -137,16 +143,26 @@ export function MediaCard({ item, variant = "diary", onClick, onExclude }: Media
       )}
 
       {/* Unified Typography System */}
-      <div className="mt-5 flex flex-col gap-1.5 px-0.5">
-        <h3 className="text-dark font-serif font-medium text-xl leading-[1.2] line-clamp-2 transition-colors duration-300 group-hover:text-accent">
+      <div className="mt-5 flex flex-col gap-1 px-0.5">
+        <h3 className="text-dark font-serif font-medium text-xl leading-[1.1] pt-1 line-clamp-2 transition-colors duration-300 group-hover:text-accent">
           {item.title}
         </h3>
         <div className="flex items-center gap-2">
-          <span className="font-sans text-[10px] font-medium uppercase tracking-[0.15em] text-gray opacity-60">
-            {displayYear}
-          </span>
-          <span className="size-0.5 bg-gray rounded-full opacity-20" />
-          <span className="font-sans text-[10px] font-medium uppercase tracking-[0.15em] text-gray opacity-60">
+          {!isRead && (
+            <>
+              <span className="font-sans text-[10px] font-medium uppercase tracking-[0.15em] text-gray opacity-60">
+                {displayYear}
+              </span>
+              <span className="size-0.5 bg-gray rounded-full opacity-20" />
+            </>
+          )}
+          <span 
+            title={item.creator}
+            className={cn(
+              "font-sans text-[10px] font-medium uppercase tracking-[0.15em] text-gray opacity-60 line-clamp-2",
+              isRead && "max-w-[180px]"
+            )}
+          >
             {displayType}
           </span>
         </div>

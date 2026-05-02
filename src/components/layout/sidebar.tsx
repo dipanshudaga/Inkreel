@@ -37,10 +37,23 @@ export function Sidebar() {
 
   // Reactive counts from the store
   const counts = useMemo(() => {
-    const values = Object.values(storeItems);
+    // Get unique items based on their internal ID to avoid double-counting 
+    // items indexed by both UUID and External ID
+    const uniqueItems = Array.from(
+      new Map(
+        Object.values(storeItems)
+          .filter(v => v.id)
+          .map(v => [v.id, v])
+      ).values()
+    );
+
+    // Add items that only have an external ID (not yet saved)
+    const externalItems = Object.values(storeItems).filter(v => !v.id);
+    const allItems = [...uniqueItems, ...externalItems];
+
     return {
-      watch: values.filter(v => v.category === 'watch' && v.status && v.status !== "none").length,
-      read: values.filter(v => v.category === 'read' && v.status && v.status !== "none").length
+      watch: allItems.filter(v => v.category === 'watch' && v.status && v.status !== "none").length,
+      read: allItems.filter(v => v.category === 'read' && v.status && v.status !== "none").length
     };
   }, [storeItems]);
 

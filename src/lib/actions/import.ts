@@ -21,7 +21,7 @@ export async function importLetterboxdAction(data: any[]) {
   for (let i = 0; i < data.length; i += chunkSize) {
     const chunk = data.slice(i, i + chunkSize);
     
-    await Promise.all(chunk.map(async (row) => {
+    await Promise.all(chunk.map(async (row, index) => {
       const title = row.Name;
       const year = parseInt(row.Year);
       const rating = parseFloat(row.Rating) || null;
@@ -88,6 +88,7 @@ export async function importLetterboxdAction(data: any[]) {
           description: match?.description || "",
           language: languageName,
           status: status,
+          createdAt: new Date(Date.now() - (i + index) * 1000),
         });
 
         importedCount++;
@@ -113,7 +114,7 @@ export async function importGoodreadsAction(data: any[]) {
   for (let i = 0; i < data.length; i += chunkSize) {
     const chunk = data.slice(i, i + chunkSize);
 
-    await Promise.all(chunk.map(async (row) => {
+    await Promise.all(chunk.map(async (row, index) => {
       const title = row.Title;
       const author = row.Author;
       const rating = parseFloat(row["My Rating"]) || null;
@@ -179,6 +180,7 @@ export async function importGoodreadsAction(data: any[]) {
           description: match?.description || "",
           language: languageName,
           status: status,
+          createdAt: new Date(Date.now() - (i + index) * 1000),
         });
 
         importedCount++;

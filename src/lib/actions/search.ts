@@ -10,8 +10,7 @@ export async function searchMediaAction(query: string) {
     const results = await Promise.allSettled([
       searchMovies(query),
       searchBooks(query),
-      searchAniList(query, "ANIME"),
-      searchAniList(query, "MANGA"),
+      searchAniList(query),
     ]);
 
     const flattenedResults = results
@@ -27,13 +26,9 @@ export async function searchMediaAction(query: string) {
     const filteredResults = flattenedResults.filter(item => {
       const title = (item.title || "").toLowerCase();
       const creator = (item.creator || "").toLowerCase();
-      const combined = `${title} ${creator}`;
       
-      // Strict check for very short queries
-      if (q.length <= 3) return title.startsWith(q) || creator.startsWith(q);
-
-      // Must contain the full query string OR all significant words
-      return combined.includes(q) || (qWords.length > 0 && qWords.every(word => combined.includes(word)));
+      // If the title already matches or starts with any of the query words, it's a keep
+      return qWords.some(word => title.includes(word)) || title.includes(q) || creator.includes(q);
     });
 
     // Sort by match quality

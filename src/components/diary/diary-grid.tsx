@@ -24,11 +24,14 @@ export function DiaryGrid({ initialItems, currentFilter, category }: DiaryGridPr
 
     if (currentFilter === "all") return true;
 
-    if (currentFilter === "watched" || currentFilter === "read") {
+    if (currentFilter === "watched" || currentFilter === "read" || currentFilter === "completed") {
       return status === "completed" || status === "loved";
     }
-    if (currentFilter === "watchlist") {
+    if (currentFilter === "watchlist" || currentFilter === "shelf") {
       return status === "watchlist" || status === "shelf";
+    }
+    if (currentFilter === "reading") {
+      return status === "reading";
     }
     if (currentFilter === "love") {
       return status === "loved";
@@ -47,9 +50,9 @@ export function DiaryGrid({ initialItems, currentFilter, category }: DiaryGridPr
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12">
-      {filteredItems.map((item) => (
-        <MediaCard key={item.id} item={item} />
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-8 gap-y-12">
+      {filteredItems.map((item, index) => (
+        <MediaCard key={item.id} item={item} index={index} />
       ))}
     </div>
   );

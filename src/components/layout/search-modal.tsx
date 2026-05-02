@@ -78,16 +78,20 @@ export function SearchModal() {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search your diary or add new..."
+            placeholder="Add to your diary"
             className="grow bg-transparent border-none outline-none text-dark font-serif italic text-[32px] placeholder:text-gray/30"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <div className="py-1 px-2 border-hairline bg-white">
-            <span className="tracking-[0.05em] uppercase text-gray font-sans font-medium text-[11px]">
-              ESC
-            </span>
-          </div>
+          <button 
+            onClick={() => query ? setQuery("") : close()}
+            className="p-2 hover:bg-surface transition-colors"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray" strokeWidth="2" strokeLinecap="square">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
 
         {/* Filters */}
