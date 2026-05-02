@@ -29,6 +29,7 @@ export const media = pgTable("media", {
   category: text("category").notNull(), // "watch" | "read"
   type: text("type").notNull(), // "movie", "anime", "book", etc.
   format: text("format"), // "OVA", "Miniseries", "TV Series", etc.
+  isDocumentary: text("is_documentary").default("false"),
   
   // Credits & Stats
   creator: text("creator"), // Director or Author
