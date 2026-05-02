@@ -197,7 +197,7 @@ export async function saveImportedMediaAction(items: any[]) {
 
 export async function getUserMediaAction() {
   const session = await auth();
-  if (!session?.user?.id) return { success: false, items: {} };
+  if (!session?.user?.id) return { success: false, items: [] };
 
   try {
     const userMedia = await db
@@ -218,7 +218,7 @@ export async function getUserMediaAction() {
     return { success: true, items };
   } catch (error) {
     console.error("Failed to get user media:", error);
-    return { success: false, items: {} };
+    return { success: false, items: [] };
   }
 }
 
