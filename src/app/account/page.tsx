@@ -10,10 +10,11 @@ import { ArchiveActions } from "./archive-actions";
 
 export default async function AccountPage() {
   const session = await auth();
-  if (!session) redirect("/login");
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
 
   // Fetch full user data including the new name field
-  const [user] = await db.select().from(users).where(eq(users.id, session.user.id));
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
   if (!user) redirect("/login");
 
 

@@ -24,7 +24,8 @@ interface ReadDiaryProps {
 
 export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
   const session = await auth();
-  if (!session) redirect("/login");
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
 
   const { 
     filter = "all", 
@@ -39,7 +40,7 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
   const conditions: any[] = [];
   
   // Base category and user filter
-  conditions.push(eq(media.userId, session.user.id));
+  conditions.push(eq(media.userId, userId));
   conditions.push(ne(media.status, "none"));
   conditions.push(or(eq(media.type, "book"), eq(media.type, "manga")));
 
@@ -91,7 +92,7 @@ export default async function ReadDiary({ searchParams }: ReadDiaryProps) {
   // Fetch all user's genres and decades for filter options
   const allUserMedia = await db.query.media.findMany({
     where: and(
-      eq(media.userId, session.user.id),
+      eq(media.userId, userId),
       or(eq(media.type, "book"), eq(media.type, "manga"))
     ),
     columns: { genres: true, releaseYear: true }

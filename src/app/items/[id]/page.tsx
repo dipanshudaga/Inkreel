@@ -121,10 +121,11 @@ export default async function ItemPage({ params }: ItemPageProps) {
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
   if (isUUID) {
-    if (!session) redirect("/login");
+    if (!session?.user?.id) redirect("/login");
+    const userId = session.user.id;
 
     const localItem = await db.query.media.findFirst({
-      where: and(eq(media.id, id), eq(media.userId, session.user.id)),
+      where: and(eq(media.id, id), eq(media.userId, userId)),
     });
     if (localItem) {
       item = await enrichItem(localItem);

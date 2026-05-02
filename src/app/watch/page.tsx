@@ -24,7 +24,8 @@ interface WatchDiaryProps {
 
 export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
   const session = await auth();
-  if (!session) redirect("/login");
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
 
   const { 
     filter = "all", 
@@ -39,7 +40,7 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
   const conditions: any[] = [];
   
   // Base category and user filter
-  conditions.push(eq(media.userId, session.user.id));
+  conditions.push(eq(media.userId, userId));
   conditions.push(ne(media.status, "none"));
   conditions.push(or(eq(media.type, "movie"), eq(media.type, "anime"), eq(media.type, "tv")));
 
@@ -97,7 +98,7 @@ export default async function WatchDiary({ searchParams }: WatchDiaryProps) {
     .select({ genres: media.genres, releaseYear: media.releaseYear })
     .from(media)
     .where(and(
-      eq(media.userId, session.user.id),
+      eq(media.userId, userId),
       or(eq(media.type, "movie"), eq(media.type, "anime"), eq(media.type, "tv"))
     ));
 
