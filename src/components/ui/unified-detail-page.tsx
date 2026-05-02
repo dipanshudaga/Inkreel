@@ -96,7 +96,7 @@ export default async function UnifiedDetailPage({ params, category }: {
               Genres
             </h3>
             <div className="flex flex-wrap gap-3">
-              {media.genres.map((genre) => (
+              {media.genres?.map((genre) => (
                 <span 
                   key={genre} 
                   className="px-4 py-1.5 border-hairline text-dark font-sans text-[12px] uppercase tracking-wider bg-white"

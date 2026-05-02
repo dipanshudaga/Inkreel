@@ -12,14 +12,14 @@ export async function matchReadItem(title: string, author?: string, isbn?: strin
 
   if (searchPromise.length > 0) {
     // 1. Filter by title similarity
-    const matches = searchPromise.filter(b => 
+    const matches = searchPromise.filter((b: any) => 
       b.title.toLowerCase().includes(title.toLowerCase()) || 
       title.toLowerCase().includes(b.title.toLowerCase())
     );
     
     // 2. Pick the most popular among matches (highest ratingsCount)
     if (matches.length > 0) {
-      searchResult = matches.sort((a, b) => (b.ratingsCount || 0) - (a.ratingsCount || 0))[0];
+      searchResult = matches.sort((a: any, b: any) => (b.ratingsCount || 0) - (a.ratingsCount || 0))[0];
     } else {
       searchResult = searchPromise[0];
     }

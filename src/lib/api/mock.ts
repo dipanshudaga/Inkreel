@@ -6,17 +6,20 @@ export interface MediaItem {
   category: "watch" | "read";
   type: string;
   title: string;
-  slug: string;
-  posterUrl: string;
-  backdropUrl?: string;
-  year: number | null;
-  creator: string;
-  description: string;
-  genres: string[];
+  slug?: string;
+  posterUrl?: string | null;
+  backdropUrl?: string | null;
+  year?: number | string | null;
+  creator?: string;
+  description?: string;
+  genres?: string[];
   rating?: number;
   runtime?: number;
   duration?: number;
   pageCount?: number;
+  voteCount?: number;
+  popularity?: number;
+  isDocumentary?: boolean;
 }
 
 export async function searchMedia(query: string): Promise<MediaItem[]> {

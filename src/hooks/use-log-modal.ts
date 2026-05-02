@@ -3,7 +3,7 @@ import { create } from 'zustand';
 interface LogModalStore {
   isOpen: boolean;
   media: any;
-  onOpen: (media: any) => void;
+  onOpen: (media?: any) => void;
   onClose: () => void;
 }
 

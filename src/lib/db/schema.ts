@@ -11,6 +11,10 @@ export const users = pgTable("users", {
   movieGoal: integer("movie_goal").default(0).notNull(),
   bookGoal: integer("book_goal").default(0).notNull(),
   
+  // Aesthetics
+  theme: text("theme").default("light"),
+  fontPreference: text("font_preference").default("sans"),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -22,6 +26,7 @@ export const media = pgTable("media", {
   
   // Basic Metadata
   title: text("title").notNull(),
+  slug: text("slug"),
   tagline: text("tagline"), // For Movies/TV
   subtitle: text("subtitle"), // For Books
   

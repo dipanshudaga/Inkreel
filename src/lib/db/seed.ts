@@ -1,68 +1,5 @@
 import { db } from "./index";
-import { media, logs } from "./schema";
-
-const sampleMedia = [
-  {
-    externalId: "tmdb_m_1",
-    type: "movie",
-    title: "Dune: Part Two",
-    releaseYear: 2024,
-    creator: "Denis Villeneuve",
-    posterUrl: "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2JGqq9TrU.jpg",
-    runtime: 166,
-    description: "Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the conspirators who destroyed his family.",
-    status: "completed",
-    rating: 4.5,
-  },
-  {
-    externalId: "ol_b_1",
-    type: "book",
-    title: "The Three-Body Problem",
-    releaseYear: 2008,
-    creator: "Liu Cixin",
-    posterUrl: "https://covers.openlibrary.org/b/id/12836267-L.jpg",
-    status: "completed",
-    rating: 4.0,
-  },
-  {
-    externalId: "ani_a_1",
-    type: "anime",
-    title: "Frieren: Beyond Journey's End",
-    releaseYear: 2023,
-    creator: "Keiichiro Saito",
-    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-5z2n2Z2Z2z2Z.jpg",
-    status: "watching",
-  },
-  {
-    externalId: "tmdb_m_2",
-    type: "movie",
-    title: "Oppenheimer",
-    releaseYear: 2023,
-    creator: "Christopher Nolan",
-    posterUrl: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
-    status: "completed",
-    rating: 5.0,
-  },
-  {
-    externalId: "ol_b_2",
-    type: "book",
-    title: "Sapiens: A Brief History of Humankind",
-    releaseYear: 2011,
-    creator: "Yuval Noah Harari",
-    posterUrl: "https://covers.openlibrary.org/b/id/8288590-L.jpg",
-    status: "completed",
-    rating: 4.5,
-  },
-  {
-    externalId: "ani_a_2",
-    type: "manga",
-    title: "Berserk",
-    releaseYear: 1989,
-    creator: "Kentaro Miura",
-    posterUrl: "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx30002-30002.jpg",
-    status: "reading",
-  },
-];
+import { media, logs, users } from "./schema";
 
 async function seed() {
   console.log("Seeding database (Postgres)...");
@@ -70,6 +7,49 @@ async function seed() {
   // Clear existing data
   await db.delete(logs);
   await db.delete(media);
+  await db.delete(users);
+
+  // Create a default user
+  const [user] = await db.insert(users).values({
+    username: "demo",
+    name: "Demo User",
+    passwordHash: "demo", // Not used for actual login in seed
+  }).returning();
+
+  const sampleMedia = [
+    {
+      userId: user.id,
+      externalId: "tmdb_m_1",
+      type: "movie",
+      title: "Dune: Part Two",
+      releaseYear: 2024,
+      creator: "Denis Villeneuve",
+      posterUrl: "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2JGqq9TrU.jpg",
+      runtime: 166,
+      description: "Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the conspirators who destroyed his family.",
+      status: "completed",
+    },
+    {
+      userId: user.id,
+      externalId: "ol_b_1",
+      type: "book",
+      title: "The Three-Body Problem",
+      releaseYear: 2008,
+      creator: "Liu Cixin",
+      posterUrl: "https://covers.openlibrary.org/b/id/12836267-L.jpg",
+      status: "completed",
+    },
+    {
+      userId: user.id,
+      externalId: "ani_a_1",
+      type: "anime",
+      title: "Frieren: Beyond Journey's End",
+      releaseYear: 2023,
+      creator: "Keiichiro Saito",
+      posterUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-5z2n2Z2Z2z2Z.jpg",
+      status: "watching",
+    }
+  ];
 
   const insertedMedia = [];
 
@@ -85,6 +65,7 @@ async function seed() {
 
   // Add some specific items and logs
   const [shogun] = await db.insert(media).values({
+    userId: user.id,
     externalId: "tmdb_tv_1",
     type: "tv",
     title: "Shōgun",
@@ -92,6 +73,7 @@ async function seed() {
     creator: "Justin Marks",
     posterUrl: "https://image.tmdb.org/t/p/w500/7WZZ12VA2BKT4T8SRATPRF69KH.jpg",
     status: "watching",
+    category: "watch"
   } as any).returning();
 
   const frieren = insertedMedia.find(m => m.title === "Frieren: Beyond Journey's End");
@@ -99,6 +81,7 @@ async function seed() {
   if (shogun && frieren) {
     await db.insert(logs).values([
       {
+        userId: user.id,
         mediaId: shogun.id,
         date: new Date().toISOString(),
         action: "watched_episode",
@@ -106,6 +89,7 @@ async function seed() {
         notes: "S1 E3",
       },
       {
+        userId: user.id,
         mediaId: frieren.id,
         date: new Date().toISOString(),
         action: "watched_episode",

@@ -222,7 +222,7 @@ export async function getUserMediaAction() {
   }
 }
 
-import { searchForMedia } from "@/lib/algorithms/media-searcher";
+// Removed broken unused import: import { searchForMedia } from "@/lib/algorithms/media-searcher";
 
 export async function searchMediaAction(query: string, category: "watch" | "read", year?: string, author?: string) {
   try {

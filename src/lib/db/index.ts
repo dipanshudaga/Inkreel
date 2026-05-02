@@ -12,17 +12,17 @@ const connectionString = process.env.DATABASE_URL!;
 
 // Prevent multiple connections in development
 declare global {
-  var postgres: ReturnType<typeof postgres> | undefined;
+  var _postgres: ReturnType<typeof postgres> | undefined;
 }
 
-const client = global.postgres || postgres(connectionString, { 
+const client = global._postgres || postgres(connectionString, { 
   prepare: false,
   connect_timeout: 15,
   max_lifetime: 60 * 30, // 30 minutes
 });
 
 if (process.env.NODE_ENV !== "production") {
-  global.postgres = client;
+  global._postgres = client;
 }
 
 export const db = drizzle(client, { schema });

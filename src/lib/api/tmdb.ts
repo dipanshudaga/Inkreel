@@ -26,7 +26,7 @@ async function tmdbFetch(endpoint: string, params: Record<string, string> = {}, 
 
   const url = `${TMDB_BASE_URL}${endpoint}?${urlParams.toString()}`;
   
-  const headers: Record<string, string> = {
+  const headers: any = {
     accept: 'application/json',
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     ...options.headers,

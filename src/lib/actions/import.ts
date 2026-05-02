@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { media } from "@/lib/db/schema";
+import { media as mediaTable } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getMovieById, getTVById, searchMovies } from "@/lib/api/tmdb";
 import { getBookById, searchBooks } from "@/lib/api/google-books";
@@ -13,6 +13,7 @@ const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
 export async function importLetterboxdAction(data: any[]) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+  const userId = session.user.id;
 
   let importedCount = 0;
   let skippedCount = 0;
@@ -29,13 +30,17 @@ export async function importLetterboxdAction(data: any[]) {
       if (!title) return;
 
       try {
-        const existing = await db.query.media.findFirst({
-          where: and(
-            eq(media.title, title), 
-            eq(media.userId, session.user.id),
-            eq(media.category, "watch")
-          ),
-        });
+        const [existing] = await db
+          .select()
+          .from(mediaTable)
+          .where(
+            and(
+              eq(mediaTable.title, title), 
+              eq(mediaTable.userId, userId),
+              eq(mediaTable.category, "watch")
+            )
+          )
+          .limit(1);
 
         if (existing) {
           skippedCount++;
@@ -71,8 +76,8 @@ export async function importLetterboxdAction(data: any[]) {
 
         const status = (rating && rating >= 4.5) ? "loved" : "completed";
 
-        await db.insert(media).values({
-          userId: session.user.id,
+        await db.insert(mediaTable).values({
+          userId: userId,
           externalId: match?.id || `lb-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
           title: title,
           category: "watch",
@@ -106,6 +111,7 @@ export async function importLetterboxdAction(data: any[]) {
 export async function importGoodreadsAction(data: any[]) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+  const userId = session.user.id;
 
   let importedCount = 0;
   let skippedCount = 0;
@@ -123,13 +129,17 @@ export async function importGoodreadsAction(data: any[]) {
       if (!title) return;
 
       try {
-        const existing = await db.query.media.findFirst({
-          where: and(
-            eq(media.title, title), 
-            eq(media.userId, session.user.id),
-            eq(media.category, "read")
-          ),
-        });
+        const [existing] = await db
+          .select()
+          .from(mediaTable)
+          .where(
+            and(
+              eq(mediaTable.title, title), 
+              eq(mediaTable.userId, userId),
+              eq(mediaTable.category, "read")
+            )
+          )
+          .limit(1);
 
         if (existing) {
           skippedCount++;
@@ -163,8 +173,8 @@ export async function importGoodreadsAction(data: any[]) {
         let status = dateReadStr ? "completed" : "shelf";
         if (rating && rating >= 4.5) status = "loved";
 
-        await db.insert(media).values({
-          userId: session.user.id,
+        await db.insert(mediaTable).values({
+          userId: userId,
           externalId: match?.id || `gr-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
           title: title,
           category: "read",

@@ -20,6 +20,7 @@ interface MediaCardProps {
     creator?: string;
     isStandup?: boolean;
     isDocumentary?: boolean;
+    matched?: any;
   };
   variant?: "diary" | "import" | "search" | "rematch";
   index?: number;

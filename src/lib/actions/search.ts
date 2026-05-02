@@ -60,7 +60,7 @@ export async function searchMediaAction(query: string) {
   }
 }
 
-export async function loadMoreAction(category: "watch" | "read", page: number) {
+export async function loadMoreAction(category: "watch" | "read" | "play", page: number) {
   try {
     let results: any[] = [];
     if (category === "watch") {

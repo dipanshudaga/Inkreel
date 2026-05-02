@@ -34,7 +34,7 @@ export function ActionBar({
   const [loading, setLoading] = useState<string | null>(null);
 
   // Use store value if available, otherwise fallback to prop
-  const status = storeItem ? storeItem.status : initialStatus;
+  const status: string | null = (storeItem ? storeItem.status : initialStatus) ?? null;
 
   const isCompleted = status === "completed" || status === "loved";
   const isPlanned = status === "watchlist" || status === "shelf";
@@ -49,9 +49,10 @@ export function ActionBar({
     
     if (loading) return;
 
+    const category: "watch" | "read" = (item?.category === "read" || item?.type === "book" || item?.type === "manga") ? "read" : "watch";
+
     try {
       let nextStatus: string | null = null;
-      const category = item?.category || (item?.type === 'book' || item?.type === 'manga' ? 'read' : 'watch');
 
       if (action === "completed") {
         nextStatus = isCompleted ? null : "completed";
@@ -96,7 +97,7 @@ export function ActionBar({
     } catch (err) {
       console.error("Action failed:", err);
       // Rollback on error
-      updateStoreItem(mediaId, status, null);
+      updateStoreItem(mediaId, status, category);
       setLoading(null);
     }
   };
