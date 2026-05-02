@@ -8,6 +8,7 @@ import { signIn } from "@/lib/auth";
 import { AuthError } from "next-auth";
 
 export async function registerAction(formData: FormData) {
+  const name = formData.get("name") as string;
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
 
@@ -23,13 +24,14 @@ export async function registerAction(formData: FormData) {
 
     const passwordHash = await bcrypt.hash(password, 10);
     await db.insert(users).values({
+      name,
       username,
       passwordHash,
     });
 
     return { success: true };
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Registration error details:", error);
     return { error: "Something went wrong during registration" };
   }
 }

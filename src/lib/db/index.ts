@@ -3,10 +3,7 @@ import postgres from "postgres";
 import * as schema from "./schema";
 import dns from "dns";
 
-// 1. Force IPv4 priority immediately
-if (typeof dns.setDefaultResultOrder === "function") {
-  dns.setDefaultResultOrder("ipv4first");
-}
+// DNS result order fix removed as DB is IPv6 only
 
 const connectionString = process.env.DATABASE_URL!;
 
