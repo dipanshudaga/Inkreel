@@ -52,8 +52,9 @@ async function enrichItem(item: any) {
 
     if (freshData) {
       // Map language code to name for display
+      const fd = freshData as any;
       try {
-        const code = freshData.languageCode || item.languageCode;
+        const code = fd.languageCode || item.languageCode;
         if (code && code.length === 2) {
           const resolved = languageNames.of(code);
           if (resolved) languageName = resolved;
@@ -61,23 +62,23 @@ async function enrichItem(item: any) {
       } catch (e) {}
 
       const enriched = {
-        tagline: item.tagline || freshData.tagline,
-        subtitle: item.subtitle || freshData.subtitle,
-        format: item.format || freshData.format,
+        tagline: item.tagline || fd.tagline,
+        subtitle: item.subtitle || fd.subtitle,
+        format: item.format || fd.format,
         language: languageName,
-        description: item.description || freshData.description,
-        creator: item.creator || freshData.creator,
-        genres: item.genres || freshData.genres?.join(", "),
-        runtime: item.runtime || freshData.runtime,
-        pageCount: item.pageCount || freshData.pageCount,
-        backdropUrl: item.backdropUrl || freshData.backdropUrl,
+        description: item.description || fd.description,
+        creator: item.creator || fd.creator,
+        genres: item.genres || (Array.isArray(fd.genres) ? fd.genres.join(", ") : fd.genres),
+        runtime: item.runtime || fd.runtime,
+        pageCount: item.pageCount || fd.pageCount,
+        backdropUrl: item.backdropUrl || fd.backdropUrl,
       };
 
       // Background persistence: if we have a UUID (it's in our DB) and we just found missing metadata, save it!
       if (item.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id)) {
-        const needsUpdate = !item.backdropUrl && freshData.backdropUrl || 
-                            !item.description && freshData.description ||
-                            !item.tagline && freshData.tagline;
+        const needsUpdate = !item.backdropUrl && fd.backdropUrl || 
+                            !item.description && fd.description ||
+                            !item.tagline && fd.tagline;
         
         if (needsUpdate) {
           // Perform update in the background (don't await to avoid blocking the request)
